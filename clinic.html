@@ -141,6 +141,7 @@ td .muted{color:var(--text-secondary);font-size:12px}
       <div class="nav-group-label">Clinic Services</div>
       <button class="nav-item active" data-view="appointments"><i class="fa-solid fa-calendar-check"></i><span>Appointments</span></button>
       <button class="nav-item" data-view="medicines"><i class="fa-solid fa-pills"></i><span>Medicine Requests</span></button>
+      <button class="nav-item" data-view="patients"><i class="fa-solid fa-notes-medical"></i><span>Patient Records</span></button>
     </div>
     <div class="nav-group" style="margin-top:auto">
       <button class="nav-item danger" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
@@ -220,6 +221,40 @@ td .muted{color:var(--text-secondary);font-size:12px}
         <div id="medTableWrap"></div>
       </div>
     </section>
+
+    <!-- PATIENT RECORDS VIEW -->
+    <section class="view" id="view-patients">
+      <div class="page-head">
+        <div><h1>Patient Records</h1><p>Record daily patient visits, diagnosis, and treatments.</p></div>
+        <button class="btn btn-outline" onclick="App.refreshAll()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div id="patAlert" class="alert"></div>
+
+      <!-- NEW PATIENT FORM -->
+      <div class="card">
+        <div class="card-head"><h3>Record New Patient Visit</h3></div>
+        <div class="form-grid">
+          <div class="field"><label>Patient Name*</label><input id="pat_name" placeholder="e.g. Juan Dela Cruz"></div>
+          <div class="field"><label>Role*</label>
+            <select id="pat_role">
+              <option value="Student">Student</option>
+              <option value="Employee">Employee / Staff</option>
+            </select>
+          </div>
+          <div class="field"><label>Date of Visit*</label><input type="date" id="pat_date"></div>
+          <div class="field"><label>Time of Visit*</label><input type="time" id="pat_time"></div>
+          <div class="field full"><label>Reason for Visit / Symptoms*</label><input id="pat_reason" placeholder="e.g. Stomach ache, dizziness"></div>
+          <div class="field full"><label>Diagnosis / Notes</label><textarea id="pat_notes" placeholder="e.g. Mild food poisoning. Given ORS."></textarea></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.recordPatient()"><i class="fa-solid fa-save"></i> Record Visit</button></div>
+      </div>
+
+      <!-- RECORDS LIST -->
+      <div class="card">
+        <div class="card-head"><h3>Recent Patient Visits</h3></div>
+        <div id="patTableWrap"></div>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -250,7 +285,8 @@ const State = {
   admin: null,
   currentView: 'appointments',
   appointments: [],
-  medicines: []
+  medicines: [],
+  patients: []
 };
 
 const $ = id => document.getElementById(id);
@@ -317,8 +353,24 @@ async function loadMedicines(){
   renderMedicines();
 }
 
+async function loadPatients(){
+  try {
+    const snap = await getDocs(collection(db, 'osas_clinic_patients'));
+    State.patients = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    State.patients.sort((a,b) => (toDate(b.createdAt)?.getTime()||0) - (toDate(a.createdAt)?.getTime()||0));
+  } catch(e) {
+    console.warn('load patients failed', e);
+    State.patients = [];
+  }
+  renderPatients();
+}
+
 // ROUTER
-const VIEW_TITLES = { appointments: 'Appointments', medicines: 'Medicine Requests' };
+const VIEW_TITLES = { 
+  appointments: 'Appointments', 
+  medicines: 'Medicine Requests',
+  patients: 'Patient Records'
+};
 
 function navigate(view){
   State.currentView = view;
@@ -463,14 +515,76 @@ async function createMedRequest(){
   }
 }
 
+// RENDER: PATIENTS
+function renderPatients(){
+  if (!State.patients.length){
+    $('patTableWrap').innerHTML = emptyHTML('No patient records logged yet.', 'fa-notes-medical');
+    return;
+  }
+
+  $('patTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Patient</th><th>Role</th><th>Date & Time</th><th>Reason for Visit</th><th>Diagnosis / Notes</th></tr></thead>
+    <tbody>${State.patients.map(p => `
+      <tr>
+        <td><strong>${esc(p.patientName)}</strong></td>
+        <td>${esc(p.role)}</td>
+        <td class="muted">${fmtDate(p.visitDate)} <br> ${esc(p.visitTime||'')}</td>
+        <td>${esc(p.reason)}</td>
+        <td class="muted">${esc(p.notes || '-')}</td>
+      </tr>
+    `).join('')}</tbody></table></div>`;
+}
+
+async function recordPatient(){
+  const name = $('pat_name').value.trim();
+  const role = $('pat_role').value;
+  const date = $('pat_date').value;
+  const time = $('pat_time').value;
+  const reason = $('pat_reason').value.trim();
+  const notes = $('pat_notes').value.trim();
+  const alertEl = $('patAlert');
+
+  if (!name || !date || !time || !reason) {
+    alertEl.className = 'alert show error';
+    alertEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i><span>Name, Date, Time, and Reason are required.</span>';
+    return;
+  }
+  alertEl.className = 'alert';
+
+  try {
+    await addDoc(collection(db, 'osas_clinic_patients'), {
+      patientName: name,
+      role: role,
+      visitDate: date,
+      visitTime: time,
+      reason: reason,
+      notes: notes,
+      createdAt: serverTimestamp(),
+      loggedBy: State.admin.uid
+    });
+    toast('Patient record saved.', 'success');
+    $('pat_name').value = '';
+    $('pat_date').value = '';
+    $('pat_time').value = '';
+    $('pat_reason').value = '';
+    $('pat_notes').value = '';
+    await loadPatients();
+  } catch(e) {
+    console.error(e);
+    alertEl.className = 'alert show error';
+    alertEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i><span>Save failed: ${esc(e.message)}</span>`;
+  }
+}
+
 window.App = {
   refreshAll: async ()=>{
     toast('Refreshing data...','info');
-    await Promise.all([loadAppointments(), loadMedicines()]);
+    await Promise.all([loadAppointments(), loadMedicines(), loadPatients()]);
     toast('Data refreshed.','success');
   },
   updateApptStatus,
-  createMedRequest
+  createMedRequest,
+  recordPatient
 };
 
 // AUTH GUARD
@@ -492,7 +606,7 @@ onAuthStateChanged(auth, async (user)=>{
     $('userAvatar').textContent = (user.email||'C')[0].toUpperCase();
     $('authGuard').style.display = 'none';
 
-    await Promise.all([loadAppointments(), loadMedicines()]);
+    await Promise.all([loadAppointments(), loadMedicines(), loadPatients()]);
     navigate('appointments');
   } catch(e){
     console.error('Auth guard error:', e);
