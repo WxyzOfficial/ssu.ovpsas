@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>University Clinic | OSAS Management System</title>
+<link rel="icon" type="image/jpeg" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --primary:#ffffff;--secondary:#38bdf8;--secondary-dark:#0284c7;
+  --background:#f8fafc;--sidebar:#ffffff;--text-primary:#1e293b;
+  --text-secondary:#64748b;--border:#e2e8f0;--success:#16a34a;
+  --warning:#f59e0b;--danger:#dc2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--text-primary);background:var(--background);min-height:100vh}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit}
+
+/* Layout */
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;transition:transform .25s, width .25s;overflow:hidden}
+.sidebar.collapsed{width:72px}
+.sidebar-head{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border);min-height:72px}
+.sidebar-head img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--secondary);flex-shrink:0}
+.sidebar-head .txt{overflow:hidden;white-space:nowrap}
+.sidebar-head .txt .n{font-weight:800;font-size:13px;line-height:1.2}
+.sidebar-head .txt .s{font-size:11px;color:var(--text-secondary)}
+.sidebar.collapsed .sidebar-head .txt{display:none}
+
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 8px}
+.nav-group{margin-bottom:6px}
+.nav-group-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-secondary);text-transform:uppercase;padding:10px 14px 6px;white-space:nowrap}
+.sidebar.collapsed .nav-group-label{text-align:center;font-size:9px;padding:8px 0 4px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:9px;font-size:13.5px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:.15s;white-space:nowrap;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.nav-item i{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-item span{overflow:hidden;text-overflow:ellipsis}
+.sidebar.collapsed .nav-item span{display:none}
+.sidebar.collapsed .nav-item{justify-content:center;padding:11px 0}
+.nav-item:hover{background:var(--background);color:var(--secondary-dark)}
+.nav-item.active{background:#e0f2fe;color:var(--secondary-dark);font-weight:600}
+.nav-item.active i{color:var(--secondary-dark)}
+.nav-item.danger{color:var(--danger)}
+.nav-item.danger:hover{background:#fef2f2;color:var(--danger)}
+
+.main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left .25s}
+.main.collapsed{margin-left:72px}
+
+/* Topbar */
+.topbar{height:64px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 24px;position:sticky;top:0;z-index:100}
+.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:.15s}
+.icon-btn:hover{background:var(--background);color:var(--secondary-dark)}
+.topbar-title{font-size:16px;font-weight:700;flex:1}
+.topbar-user{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-secondary)}
+.topbar-user .avatar{width:34px;height:34px;border-radius:50%;background:#e0f2fe;color:var(--secondary-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+/* Content */
+.content{padding:24px;flex:1;max-width:100%;overflow-x:hidden}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.page-head h1{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.page-head p{font-size:13px;color:var(--text-secondary);margin-top:3px}
+
+/* Cards */
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.card-head h3{font-size:15px;font-weight:700}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--secondary);color:#fff}
+.btn-primary:hover{background:var(--secondary-dark)}
+.btn-outline{background:#fff;color:var(--text-primary);border-color:var(--border)}
+.btn-outline:hover{border-color:var(--secondary);color:var(--secondary-dark)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:7px}
+
+/* Forms & Table */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;color:var(--text-primary)}
+.field input,.field select,.field textarea{padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text-primary);background:#fff;outline:none;transition:.15s;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--secondary);box-shadow:0 0 0 3px rgba(56,189,248,.13)}
+.field textarea{resize:vertical;min-height:70px}
+
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}
+thead th{background:var(--background);text-align:left;padding:11px 14px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-secondary);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#fafcff}
+td .muted{color:var(--text-secondary);font-size:12px}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge.pending{background:#fef3c7;color:#92400e}
+.badge.approved{background:#dbeafe;color:#1e40af}
+.badge.completed{background:#dcfce7;color:#166534}
+.badge.cancelled{background:#fee2e2;color:#991b1b}
+
+.alert{padding:11px 14px;border-radius:10px;font-size:13px;display:none;align-items:flex-start;gap:10px;margin-bottom:16px;line-height:1.4}
+.alert.show{display:flex}
+.alert.success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.alert.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.alert.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.alert.warning{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+
+.empty{padding:40px 20px;text-align:center;color:var(--text-secondary)}
+.empty i{font-size:38px;color:var(--border);margin-bottom:12px;display:block}
+.empty p{font-size:13px}
+
+.view{display:none}
+.view.active{display:block}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.mobile-open{transform:translateX(0)}
+  .main{margin-left:0!important}
+  .sidebar.collapsed{width:260px}
+  .sidebar.collapsed .nav-item span{display:inline}
+  .sidebar.collapsed .nav-item{justify-content:flex-start;padding:10px 14px}
+  .sidebar.collapsed .sidebar-head .txt{display:block}
+  .content{padding:16px}
+}
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:150}
+.overlay.show{display:block}
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU">
+    <div class="txt">
+      <div class="n">University Clinic</div>
+      <div class="s">Samar State University</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <div class="nav-group">
+      <div class="nav-group-label">Clinic Services</div>
+      <button class="nav-item active" data-view="appointments"><i class="fa-solid fa-calendar-check"></i><span>Appointments</span></button>
+      <button class="nav-item" data-view="medicines"><i class="fa-solid fa-pills"></i><span>Medicine Requests</span></button>
+    </div>
+    <div class="nav-group" style="margin-top:auto">
+      <button class="nav-item danger" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
+    </div>
+  </nav>
+</aside>
+<div class="overlay" id="overlay"></div>
+
+<div class="main" id="main">
+  <header class="topbar">
+    <button class="icon-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    <div class="topbar-title" id="topbarTitle">Appointments</div>
+    <div class="topbar-user">
+      <div class="avatar" id="userAvatar">C</div>
+      <span id="userEmail">loading...</span>
+    </div>
+  </header>
+
+  <main class="content" id="content">
+    <div id="authGuard" class="empty"><i class="fa-solid fa-circle-notch fa-spin"></i><p>Verifying clinic access...</p></div>
+
+    <!-- APPOINTMENTS VIEW -->
+    <section class="view" id="view-appointments">
+      <div class="page-head">
+        <div><h1>Clinic Appointments</h1><p>Manage student and employee clinic visits.</p></div>
+        <button class="btn btn-outline" onclick="App.refreshAll()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div id="apptAlert" class="alert"></div>
+      
+      <div class="card">
+        <div class="card-head"><h3>All Appointments</h3></div>
+        <div class="toolbar" style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap">
+          <div class="search-box" style="position:relative;flex:1;max-width:300px">
+            <i class="fa-solid fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary)"></i>
+            <input type="text" id="apptSearch" placeholder="Search student name..." style="width:100%;padding:9px 12px 9px 36px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;outline:none">
+          </div>
+          <select id="apptStatusFilter" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;outline:none;background:#fff">
+            <option value="">All Status</option>
+            <option value="Upcoming">Upcoming</option>
+            <option value="Done">Done</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div id="apptTableWrap"></div>
+      </div>
+    </section>
+
+    <!-- MEDICINES VIEW -->
+    <section class="view" id="view-medicines">
+      <div class="page-head">
+        <div><h1>Medicine Requests</h1><p>Track and manage medicine requests from employees and students.</p></div>
+        <button class="btn btn-outline" onclick="App.refreshAll()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div id="medAlert" class="alert"></div>
+
+      <!-- NEW REQUEST FORM -->
+      <div class="card">
+        <div class="card-head"><h3>Log New Medicine Request</h3></div>
+        <div class="form-grid">
+          <div class="field"><label>Requester Name*</label><input id="med_name" placeholder="e.g. Juan Dela Cruz"></div>
+          <div class="field"><label>Requester Role*</label>
+            <select id="med_role">
+              <option value="Student">Student</option>
+              <option value="Employee">Employee / Staff</option>
+            </select>
+          </div>
+          <div class="field full"><label>Department/Office*</label><input id="med_dept" placeholder="e.g. College of Engineering, Registrar's Office"></div>
+          <div class="field full"><label>Medicine Name & Quantity*</label><input id="med_item" placeholder="e.g. Paracetamol 500mg - 2 tablets"></div>
+          <div class="field full"><label>Notes / Reason</label><textarea id="med_notes" placeholder="e.g. Headache"></textarea></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.createMedRequest()"><i class="fa-solid fa-save"></i> Log Request</button></div>
+      </div>
+
+      <!-- REQUESTS LIST -->
+      <div class="card">
+        <div class="card-head"><h3>Recent Requests</h3></div>
+        <div id="medTableWrap"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toastHost"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { 
+  getFirestore, collection, doc, getDoc, getDocs, addDoc, query, where, orderBy, Timestamp, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAo5TKy65vg27n9Dkuh_PDnNT2byHndEY0",
+    authDomain: "forms-a9b1c.firebaseapp.com",
+    projectId: "forms-a9b1c",
+    storageBucket: "forms-a9b1c.firebasestorage.app",
+    messagingSenderId: "1076879732619",
+    appId: "1:1076879732619:web:89ba4135332ac30805898e",
+    measurementId: "G-88TF54KBKR"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const State = {
+  admin: null,
+  currentView: 'appointments',
+  appointments: [],
+  medicines: []
+};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const toDate = v => {
+  if (!v) return null;
+  if (v instanceof Timestamp) return v.toDate();
+  if (typeof v.toDate === 'function') return v.toDate();
+  if (v.seconds) return new Date(v.seconds*1000);
+  const d = new Date(v); return isNaN(d) ? null : d;
+};
+const fmtDate = v => { const d = toDate(v); return d ? d.toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'}) : '-'; };
+const fmtDateTime = v => { const d = toDate(v); return d ? d.toLocaleString('en-PH',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '-'; };
+
+function toast(msg, type='info'){
+  const host = $('toastHost');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.style.cssText = 'background:#fff;padding:12px 15px;border-radius:9px;font-size:13px;box-shadow:0 10px 30px -10px rgba(0,0,0,.2);margin-bottom:8px;border-left:4px solid ' + (type==='success'?'var(--success)':'var(--secondary-dark)');
+  el.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':'fa-circle-info'}"></i><span>${esc(msg)}</span>`;
+  host.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='.3s'; setTimeout(()=>el.remove(),300); }, 3800);
+}
+
+function alertBox(id, type, msg){
+  const el = $(id);
+  if (!el) return;
+  if (!msg){ el.className='alert'; el.textContent=''; return; }
+  el.className = 'alert show ' + type;
+  el.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':'fa-circle-info'}"></i><span>${esc(msg)}</span>`;
+}
+
+function emptyHTML(msg, icon='fa-inbox'){ return `<div class="empty"><i class="fa-solid ${icon}"></i><p>${esc(msg)}</p></div>`; }
+
+function badge(status){
+  const s = String(status||'').toLowerCase().replace(/\s+/g,'');
+  const map = {upcoming:'pending', pending:'pending', done:'completed', completed:'completed', cancelled:'cancelled'};
+  const cls = map[s] || 'pending';
+  return `<span class="badge ${cls}">${esc(status||'-')}</span>`;
+}
+
+// LOADERS
+async function loadAppointments(){
+  try {
+    const snap = await getDocs(collection(db, 'osas_appointments'));
+    State.appointments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    State.appointments.sort((a,b) => (toDate(b.createdAt)?.getTime()||0) - (toDate(a.createdAt)?.getTime()||0));
+  } catch(e) {
+    console.warn('load appointments failed', e);
+    State.appointments = [];
+  }
+  renderAppointments();
+}
+
+async function loadMedicines(){
+  try {
+    const snap = await getDocs(collection(db, 'osas_medicines'));
+    State.medicines = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    State.medicines.sort((a,b) => (toDate(b.createdAt)?.getTime()||0) - (toDate(a.createdAt)?.getTime()||0));
+  } catch(e) {
+    console.warn('load medicines failed', e);
+    State.medicines = [];
+  }
+  renderMedicines();
+}
+
+// ROUTER
+const VIEW_TITLES = { appointments: 'Appointments', medicines: 'Medicine Requests' };
+
+function navigate(view){
+  State.currentView = view;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el = $('view-'+view);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-item[data-view]').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  $('topbarTitle').textContent = VIEW_TITLES[view] || view;
+  if (window.innerWidth <= 900){
+    $('sidebar').classList.remove('mobile-open');
+    $('overlay').classList.remove('show');
+  }
+}
+
+document.querySelectorAll('.nav-item[data-view]').forEach(btn=>{
+  btn.addEventListener('click', ()=>navigate(btn.dataset.view));
+});
+
+$('sidebarToggle').addEventListener('click', ()=>{
+  if (window.innerWidth <= 900){
+    $('sidebar').classList.toggle('mobile-open');
+    $('overlay').classList.toggle('show');
+  } else {
+    $('sidebar').classList.toggle('collapsed');
+    $('main').classList.toggle('collapsed');
+  }
+});
+$('overlay').addEventListener('click', ()=>{
+  $('sidebar').classList.remove('mobile-open');
+  $('overlay').classList.remove('show');
+});
+
+$('logoutBtn').addEventListener('click', async ()=>{
+  await signOut(auth);
+  window.location.href = 'login.html';
+});
+
+// RENDER: APPOINTMENTS
+function renderAppointments(){
+  const term = ($('apptSearch').value || '').toLowerCase();
+  const status = $('apptStatusFilter').value;
+  
+  const rows = State.appointments.filter(a => {
+    if (status && a.status !== status) return false;
+    if (!term) return true;
+    return ((a.studentName||'')+' '+(a.purpose||'')).toLowerCase().includes(term);
+  });
+
+  if (!rows.length){
+    $('apptTableWrap').innerHTML = emptyHTML('No appointments found.', 'fa-calendar-check');
+    return;
+  }
+
+  $('apptTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Student</th><th>Purpose</th><th>Date</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${rows.map(a => `
+      <tr>
+        <td><strong>${esc(a.studentName||'-')}</strong><div class="muted">${esc(a.studentEmail||'')}</div></td>
+        <td>${esc(a.purpose||'-')}</td>
+        <td>${fmtDate(a.apptDate)}</td>
+        <td>${esc(a.apptTime||'-')}</td>
+        <td>${badge(a.status)}</td>
+        <td>
+          <select style="padding:4px;border:1px solid var(--border);border-radius:6px;font-size:11.5px" onchange="App.updateApptStatus('${a.id}',this.value)">
+            ${['Upcoming','Done','Cancelled'].map(s=>`<option ${a.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </td>
+      </tr>
+    `).join('')}</tbody></table></div>`;
+}
+
+$('apptSearch').addEventListener('input', renderAppointments);
+$('apptStatusFilter').addEventListener('change', renderAppointments);
+
+async function updateApptStatus(id, status){
+  try {
+    await updateDoc(doc(db, 'osas_appointments', id), { status, updatedAt: serverTimestamp() });
+    toast('Appointment status updated.', 'success');
+    await loadAppointments();
+  } catch(e) {
+    console.error(e);
+    alertBox('apptAlert', 'error', 'Update failed: ' + e.message);
+  }
+}
+
+// RENDER: MEDICINES
+function renderMedicines(){
+  if (!State.medicines.length){
+    $('medTableWrap').innerHTML = emptyHTML('No medicine requests logged yet.', 'fa-pills');
+    return;
+  }
+
+  $('medTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Requester</th><th>Role</th><th>Department/Office</th><th>Medicine Requested</th><th>Notes</th><th>Date Requested</th></tr></thead>
+    <tbody>${State.medicines.map(m => `
+      <tr>
+        <td><strong>${esc(m.requesterName)}</strong></td>
+        <td>${esc(m.requesterRole)}</td>
+        <td class="muted">${esc(m.department || '-')}</td>
+        <td>${esc(m.medicineItem)}</td>
+        <td class="muted">${esc(m.notes || '-')}</td>
+        <td class="muted">${fmtDateTime(m.createdAt)}</td>
+      </tr>
+    `).join('')}</tbody></table></div>`;
+}
+
+async function createMedRequest(){
+  const name = $('med_name').value.trim();
+  const role = $('med_role').value;
+  const dept = $('med_dept').value.trim();
+  const item = $('med_item').value.trim();
+  const notes = $('med_notes').value.trim();
+  const alertEl = $('medAlert');
+
+  if (!name || !item || !dept) {
+    alertEl.className = 'alert show error';
+    alertEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i><span>Name, Department/Office, and Medicine requested are required.</span>';
+    return;
+  }
+  alertEl.className = 'alert';
+
+  try {
+    await addDoc(collection(db, 'osas_medicines'), {
+      requesterName: name,
+      requesterRole: role,
+      department: dept,
+      medicineItem: item,
+      notes: notes,
+      createdAt: serverTimestamp(),
+      loggedBy: State.admin.uid
+    });
+    toast('Medicine request logged.', 'success');
+    $('med_name').value = '';
+    $('med_dept').value = '';
+    $('med_item').value = '';
+    $('med_notes').value = '';
+    await loadMedicines();
+  } catch(e) {
+    console.error(e);
+    alertEl.className = 'alert show error';
+    alertEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i><span>Save failed: ${esc(e.message)}</span>`;
+  }
+}
+
+window.App = {
+  refreshAll: async ()=>{
+    toast('Refreshing data...','info');
+    await Promise.all([loadAppointments(), loadMedicines()]);
+    toast('Data refreshed.','success');
+  },
+  updateApptStatus,
+  createMedRequest
+};
+
+// AUTH GUARD
+onAuthStateChanged(auth, async (user)=>{
+  if (!user){
+    window.location.href = 'login.html';
+    return;
+  }
+  try {
+    const snap = await getDoc(doc(db, 'admins', user.uid));
+    if (!snap.exists() || snap.data().active !== true){
+      await signOut(auth);
+      window.location.href = 'login.html';
+      return;
+    }
+    
+    State.admin = { uid: user.uid, email: user.email };
+    $('userEmail').textContent = user.email;
+    $('userAvatar').textContent = (user.email||'C')[0].toUpperCase();
+    $('authGuard').style.display = 'none';
+
+    await Promise.all([loadAppointments(), loadMedicines()]);
+    navigate('appointments');
+  } catch(e){
+    console.error('Auth guard error:', e);
+    $('authGuard').innerHTML = `<div class="alert error show"><i class="fa-solid fa-circle-exclamation"></i><span>Unable to load clinic portal: ${esc(e.message)}</span></div>`;
+  }
+});
+</script>
+</body>
+</html>
