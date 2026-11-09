@@ -154,7 +154,7 @@ import {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signOut, onAuthStateChanged, browserLocalPersistence, setPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAo5TKy65vg27n9Dkuh_PDnNT2byHndEY0",
@@ -195,6 +195,31 @@ $('togglePass').addEventListener('click', () => {
   $('togglePass').innerHTML = isPass ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
 });
 
+// ============================================================
+// ROLE RESTRICTION LOGIC
+// ============================================================
+async function verifyStudentRole(uid) {
+  try {
+    // 1. Check if they are in the admins collection (Deny access if so)
+    const adminSnap = await getDoc(doc(db, 'admins', uid));
+    if (adminSnap.exists()) {
+      return { ok: false, reason: 'Staff accounts must use the Staff Login portal.' };
+    }
+
+    // 2. Check if they are in the students collection (Allow access)
+    const studentSnap = await getDoc(doc(db, 'students', uid));
+    if (studentSnap.exists()) {
+      return { ok: true };
+    }
+
+    // 3. If neither exists, deny access
+    return { ok: false, reason: 'Student profile not found. Please register or contact OSAS.' };
+  } catch (e) {
+    console.error('Verification error:', e);
+    return { ok: false, reason: 'Unable to verify role. Check connection.' };
+  }
+}
+
 // LOGIN
 $('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -210,7 +235,17 @@ $('loginForm').addEventListener('submit', async (e) => {
   setLoading('loginBtn','loginBtnText', true);
   try {
     await setPersistence(auth, browserLocalPersistence);
-    await signInWithEmailAndPassword(auth, email, password);
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    
+    // Verify student role
+    const check = await verifyStudentRole(cred.user.uid);
+    if (!check.ok) {
+      await signOut(auth);
+      showMsg('error', check.reason);
+      setLoading('loginBtn','loginBtnText', false, '<i class="fa-solid fa-right-to-bracket"></i> Sign In');
+      return;
+    }
+
     showMsg('success', 'Login successful. Redirecting...');
     setTimeout(() => { window.location.href = 'student.html'; }, 700);
   } catch (err) {
@@ -219,8 +254,8 @@ $('loginForm').addEventListener('submit', async (e) => {
     if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') m = 'Invalid email or password.';
     if (err.code === 'auth/too-many-requests') m = 'Too many attempts. Try again later.';
     showMsg('error', m);
+    setLoading('loginBtn','loginBtnText', false, '<i class="fa-solid fa-right-to-bracket"></i> Sign In');
   }
-  setLoading('loginBtn','loginBtnText', false, '<i class="fa-solid fa-right-to-bracket"></i> Sign In');
 });
 
 // SHOW SIGNUP
@@ -277,10 +312,16 @@ $('signupForm').addEventListener('submit', async (e) => {
   }
 });
 
-// Redirect if already logged in
-onAuthStateChanged(auth, (user) => {
+// Auto-redirect if already logged in (with role check)
+onAuthStateChanged(auth, async (user) => {
   if (user) {
-    window.location.href = 'student.html';
+    const check = await verifyStudentRole(user.uid);
+    if (check.ok) {
+      window.location.href = 'student.html';
+    } else {
+      // If an admin is logged in, sign them out silently so they can use the other portal
+      await signOut(auth);
+    }
   }
 });
 </script>
