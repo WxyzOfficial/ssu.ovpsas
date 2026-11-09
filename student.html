@@ -133,12 +133,26 @@ td .muted{color:var(--text-secondary);font-size:12px}
     </div>
   </div>
   <nav class="sidebar-nav" id="sidebarNav">
+    <!-- OVPSAS -->
     <div class="nav-group">
-      <div class="nav-group-label">Menu</div>
+      <div class="nav-group-label">OVPSAS</div>
       <button class="nav-item active" data-view="concerns"><i class="fa-solid fa-headset"></i><span>Submit Concern</span></button>
-      <button class="nav-item" data-view="internship"><i class="fa-solid fa-file-pdf"></i><span>Internship Forms</span></button>
-      <button class="nav-item" data-view="companies"><i class="fa-solid fa-building"></i><span>Partner Companies</span></button>
     </div>
+
+    <!-- STUDENT INTERNSHIP OFFICE -->
+    <div class="nav-group">
+      <div class="nav-group-label">Student Internship Office</div>
+      <button class="nav-item" data-view="companies"><i class="fa-solid fa-building"></i><span>Partner Companies</span></button>
+      <button class="nav-item" data-view="internship"><i class="fa-solid fa-file-pdf"></i><span>Internship Forms</span></button>
+    </div>
+
+    <!-- CLINIC SERVICES -->
+    <div class="nav-group">
+      <div class="nav-group-label">Clinic Services</div>
+      <button class="nav-item" data-view="appointments"><i class="fa-solid fa-calendar-check"></i><span>Submit Medical Appointment</span></button>
+      <button class="nav-item" data-view="medicines"><i class="fa-solid fa-pills"></i><span>Request Medicine</span></button>
+    </div>
+
     <div class="nav-group" style="margin-top:auto">
       <button class="nav-item danger" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
     </div>
@@ -159,7 +173,7 @@ td .muted{color:var(--text-secondary);font-size:12px}
   <main class="content" id="content">
     <div id="authGuard" class="empty"><i class="fa-solid fa-circle-notch fa-spin"></i><p>Verifying student access...</p></div>
 
-    <!-- CONCERNS VIEW -->
+    <!-- OVPSAS: CONCERNS VIEW -->
     <section class="view" id="view-concerns">
       <div class="page-head">
         <div><h1>Submit a Concern</h1><p>Reach out to the OSAS Office. Your privacy is protected.</p></div>
@@ -191,7 +205,7 @@ td .muted{color:var(--text-secondary);font-size:12px}
       </div>
     </section>
 
-    <!-- INTERNSHIP VIEW -->
+    <!-- INTERNSHIP: FORMS VIEW -->
     <section class="view" id="view-internship">
       <div class="page-head">
         <div><h1>Internship Documents</h1><p>Upload your Entry and Exit forms (PDF only).</p></div>
@@ -230,7 +244,7 @@ td .muted{color:var(--text-secondary);font-size:12px}
       </div>
     </section>
 
-    <!-- PARTNER COMPANIES VIEW -->
+    <!-- INTERNSHIP: PARTNER COMPANIES VIEW -->
     <section class="view" id="view-companies">
       <div class="page-head">
         <div><h1>Partner Companies</h1><p>View accredited companies and the courses they are looking for.</p></div>
@@ -247,6 +261,51 @@ td .muted{color:var(--text-secondary);font-size:12px}
       </div>
 
       <div id="companiesList"></div>
+    </section>
+
+    <!-- CLINIC: APPOINTMENTS VIEW -->
+    <section class="view" id="view-appointments">
+      <div class="page-head">
+        <div><h1>Submit Medical Appointment</h1><p>Request a checkup or consultation with the University Clinic.</p></div>
+      </div>
+      <div id="apptAlert" class="alert"></div>
+
+      <div class="card">
+        <div class="card-head"><h3>New Appointment</h3></div>
+        <div class="form-grid">
+          <div class="field full"><label>Purpose / Symptoms*</label><input id="appt_purpose" placeholder="e.g. Fever, cough, general checkup"></div>
+          <div class="field"><label>Preferred Date*</label><input type="date" id="appt_date"></div>
+          <div class="field"><label>Preferred Time*</label><input type="time" id="appt_time"></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.submitAppointment()"><i class="fa-solid fa-paper-plane"></i> Request Appointment</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>My Appointments</h3></div>
+        <div id="myApptsList"></div>
+      </div>
+    </section>
+
+    <!-- CLINIC: MEDICINES VIEW -->
+    <section class="view" id="view-medicines">
+      <div class="page-head">
+        <div><h1>Request Medicine</h1><p>Request medicines from the University Clinic.</p></div>
+      </div>
+      <div id="medAlert" class="alert"></div>
+
+      <div class="card">
+        <div class="card-head"><h3>Medicine Request</h3></div>
+        <div class="form-grid">
+          <div class="field full"><label>Medicine Requested & Quantity*</label><input id="med_item" placeholder="e.g. Paracetamol 500mg - 2 tablets"></div>
+          <div class="field full"><label>Reason / Symptoms*</label><textarea id="med_notes" placeholder="e.g. Headache and fever since morning"></textarea></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.requestMedicine()"><i class="fa-solid fa-paper-plane"></i> Submit Request</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>My Medicine Requests</h3></div>
+        <div id="myMedsList"></div>
+      </div>
     </section>
   </main>
 </div>
@@ -279,7 +338,9 @@ const State = {
   student: null,
   myConcerns: [],
   myDocs: [],
-  companies: []
+  companies: [],
+  myMeds: [],
+  myAppts: []
 };
 
 const $ = id => document.getElementById(id);
@@ -292,6 +353,7 @@ const toDate = v => {
   const d = new Date(v); return isNaN(d) ? null : d;
 };
 const fmtDate = v => { const d = toDate(v); return d ? d.toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'}) : '-'; };
+const fmtDateTime = v => { const d = toDate(v); return d ? d.toLocaleString('en-PH',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '-'; };
 
 function toast(msg, type='info'){
   const host = $('toastHost');
@@ -316,8 +378,10 @@ function emptyHTML(msg, icon='fa-inbox'){ return `<div class="empty"><i class="f
 // ROUTER
 const VIEW_TITLES = {
   concerns: 'Submit Concern',
+  companies: 'Partner Companies',
   internship: 'Internship Forms',
-  companies: 'Partner Companies'
+  appointments: 'Submit Medical Appointment',
+  medicines: 'Request Medicine'
 };
 
 function navigate(view){
@@ -455,6 +519,52 @@ function renderCompanies(){
 
 $('compSearch').addEventListener('input', renderCompanies);
 
+async function loadMyMeds(){
+  const q = query(collection(db, 'osas_medicines'), where('requesterName', '==', State.student.name));
+  const snap = await getDocs(q);
+  State.myMeds = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+  State.myMeds.sort((a,b)=>(toDate(b.createdAt)?.getTime()||0)-(toDate(a.createdAt)?.getTime()||0));
+  renderMyMeds();
+}
+
+function renderMyMeds(){
+  if (!State.myMeds.length){ $('myMedsList').innerHTML = emptyHTML('You have not requested any medicines yet.','fa-pills'); return; }
+  $('myMedsList').innerHTML = State.myMeds.map(m=>`
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;background:#fff">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <strong style="font-size:14px">${esc(m.medicineItem)}</strong>
+        <span class="badge pending">Requested</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">${esc(m.notes)}</p>
+      <div style="font-size:11px;color:var(--text-secondary)">Requested on ${fmtDateTime(m.createdAt)}</div>
+    </div>
+  `).join('');
+}
+
+async function loadMyAppts(){
+  const q = query(collection(db, 'osas_appointments'), where('studentEmail', '==', State.student.email));
+  const snap = await getDocs(q);
+  State.myAppts = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+  State.myAppts.sort((a,b)=>(toDate(b.createdAt)?.getTime()||0)-(toDate(a.createdAt)?.getTime()||0));
+  renderMyAppts();
+}
+
+function renderMyAppts(){
+  if (!State.myAppts.length){ $('myApptsList').innerHTML = emptyHTML('You have not requested any appointments yet.','fa-calendar-check'); return; }
+  $('myApptsList').innerHTML = State.myAppts.map(a=>`
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;background:#fff">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <strong style="font-size:14px">${esc(a.purpose)}</strong>
+        <span class="badge ${String(a.status||'').toLowerCase().replace(/\s+/g,'')}">${esc(a.status||'Pending')}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">
+        Date: ${fmtDate(a.apptDate)} | Time: ${esc(a.apptTime||'-')}
+      </div>
+      <div style="font-size:11px;color:var(--text-secondary)">Requested on ${fmtDateTime(a.createdAt)}</div>
+    </div>
+  `).join('');
+}
+
 // ACTION: Submit Concern
 async function submitConcern(){
   const cat = $('cf_cat').value;
@@ -491,7 +601,7 @@ async function submitConcern(){
   btn.disabled = false; btn.innerHTML = orig;
 }
 
-// ACTION: Upload Document (Base64 & Auto-Compress)
+// ACTION: Upload Document (Base64)
 async function uploadDocument(){
   const type = $('doc_type').value;
   const file = $('file_input').files[0];
@@ -585,7 +695,84 @@ async function viewDoc(docId){
   }
 }
 
-window.App = { submitConcern, uploadDocument, viewDoc, loadCompanies };
+// ACTION: Request Medicine
+async function requestMedicine(){
+  const item = $('med_item').value.trim();
+  const notes = $('med_notes').value.trim();
+  const alertEl = $('medAlert');
+
+  if (!item || !notes) {
+    alertBox('medAlert', 'error', 'Please fill in the medicine requested and the reason.');
+    return;
+  }
+
+  const btn = event.target.closest('button');
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+  try {
+    await addDoc(collection(db, 'osas_medicines'), {
+      requesterName: State.student.name,
+      requesterRole: 'Student',
+      department: 'Student Body',
+      medicineItem: item,
+      notes: notes,
+      createdAt: serverTimestamp(),
+      createdBy: State.student.uid
+    });
+    alertBox('medAlert', 'success', 'Medicine request submitted. Please wait for the clinic staff to process it.');
+    $('med_item').value = '';
+    $('med_notes').value = '';
+    await loadMyMeds();
+  } catch(e) {
+    console.error(e);
+    alertBox('medAlert', 'error', 'Submission failed: ' + e.message);
+  }
+
+  btn.disabled = false; btn.innerHTML = orig;
+}
+
+// ACTION: Submit Medical Appointment
+async function submitAppointment(){
+  const purpose = $('appt_purpose').value.trim();
+  const date = $('appt_date').value;
+  const time = $('appt_time').value;
+  const alertEl = $('apptAlert');
+
+  if (!purpose || !date || !time) {
+    alertBox('apptAlert', 'error', 'Please fill in the purpose, date, and time.');
+    return;
+  }
+
+  const btn = event.target.closest('button');
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+  try {
+    await addDoc(collection(db, 'osas_appointments'), {
+      studentName: State.student.name,
+      studentEmail: State.student.email,
+      purpose: purpose,
+      apptDate: date,
+      apptTime: time,
+      status: 'Upcoming',
+      createdAt: serverTimestamp(),
+      createdBy: State.student.uid
+    });
+    alertBox('apptAlert', 'success', 'Appointment requested. Please wait for the clinic staff to confirm.');
+    $('appt_purpose').value = '';
+    $('appt_date').value = '';
+    $('appt_time').value = '';
+    await loadMyAppts();
+  } catch(e) {
+    console.error(e);
+    alertBox('apptAlert', 'error', 'Submission failed: ' + e.message);
+  }
+
+  btn.disabled = false; btn.innerHTML = orig;
+}
+
+window.App = { submitConcern, uploadDocument, viewDoc, loadCompanies, requestMedicine, submitAppointment };
 
 // AUTH GUARD
 onAuthStateChanged(auth, async (user) => {
@@ -605,7 +792,7 @@ onAuthStateChanged(auth, async (user) => {
     $('userAvatar').textContent = State.student.name ? State.student.name[0].toUpperCase() : 'S';
     $('authGuard').style.display = 'none';
     
-    await Promise.all([loadMyConcerns(), loadMyDocs(), loadCompanies()]);
+    await Promise.all([loadMyConcerns(), loadMyDocs(), loadCompanies(), loadMyMeds(), loadMyAppts()]);
     navigate('concerns');
   } catch(e){
     console.error('Auth error:', e);
