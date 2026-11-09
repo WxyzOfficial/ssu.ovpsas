@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Portal | OSAS Management System</title>
+<link rel="icon" type="image/jpeg" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --primary:#ffffff;--secondary:#38bdf8;--secondary-dark:#0284c7;
+  --background:#f8fafc;--sidebar:#ffffff;--text-primary:#1e293b;
+  --text-secondary:#64748b;--border:#e2e8f0;--success:#16a34a;
+  --warning:#f59e0b;--danger:#dc2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--text-primary);background:var(--background);min-height:100vh}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit}
+
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;transition:transform .25s, width .25s;overflow:hidden}
+.sidebar-head{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border);min-height:72px}
+.sidebar-head img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--secondary);flex-shrink:0}
+.sidebar-head .txt{overflow:hidden;white-space:nowrap}
+.sidebar-head .txt .n{font-weight:800;font-size:13px;line-height:1.2}
+.sidebar-head .txt .s{font-size:11px;color:var(--text-secondary)}
+
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 8px}
+.nav-group{margin-bottom:6px}
+.nav-group-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-secondary);text-transform:uppercase;padding:10px 14px 6px;white-space:nowrap}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:9px;font-size:13.5px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:.15s;white-space:nowrap;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.nav-item i{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-item:hover{background:var(--background);color:var(--secondary-dark)}
+.nav-item.active{background:#e0f2fe;color:var(--secondary-dark);font-weight:600}
+.nav-item.danger{color:var(--danger)}
+
+.main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{height:64px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 24px;position:sticky;top:0;z-index:100}
+.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px}
+.topbar-title{font-size:16px;font-weight:700;flex:1}
+.topbar-user{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-secondary)}
+.topbar-user .avatar{width:34px;height:34px;border-radius:50%;background:#e0f2fe;color:var(--secondary-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+.content{padding:24px;flex:1;max-width:100%;overflow-x:hidden}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.page-head h1{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.page-head p{font-size:13px;color:var(--text-secondary);margin-top:3px}
+
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.card-head h3{font-size:15px;font-weight:700}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--secondary);color:#fff}
+.btn-primary:hover{background:var(--secondary-dark)}
+.btn-outline{background:#fff;color:var(--text-primary);border-color:var(--border)}
+.btn-outline:hover{border-color:var(--secondary);color:var(--secondary-dark)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:7px}
+
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;color:var(--text-primary)}
+.field input,.field select,.field textarea{padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text-primary);background:#fff;outline:none;transition:.15s;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--secondary);box-shadow:0 0 0 3px rgba(56,189,248,.13)}
+.field textarea{resize:vertical;min-height:70px}
+
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}
+thead th{background:var(--background);text-align:left;padding:11px 14px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-secondary);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#fafcff}
+td .muted{color:var(--text-secondary);font-size:12px}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge.pending{background:#fef3c7;color:#92400e}
+.badge.resolved{background:#dcfce7;color:#166534}
+.badge.inprogress{background:#dbeafe;color:#1e40af}
+
+.alert{padding:11px 14px;border-radius:10px;font-size:13px;display:none;align-items:flex-start;gap:10px;margin-bottom:16px;line-height:1.4}
+.alert.show{display:flex}
+.alert.success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.alert.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.alert.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.alert.warning{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+
+.empty{padding:40px 20px;text-align:center;color:var(--text-secondary)}
+.empty i{font-size:38px;color:var(--border);margin-bottom:12px;display:block}
+.empty p{font-size:13px}
+
+.view{display:none}
+.view.active{display:block}
+
+.file-upload-box{border:2px dashed var(--border);border-radius:12px;padding:30px;text-align:center;cursor:pointer;transition:.2s;background:var(--background)}
+.file-upload-box:hover{border-color:var(--secondary);background:#f0f9ff}
+.file-upload-box i{font-size:32px;color:var(--secondary);margin-bottom:10px}
+.file-upload-box p{font-size:13px;color:var(--text-secondary)}
+.file-upload-box input[type="file"]{display:none}
+
+.upload-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;background:#fff}
+.upload-item .info{display:flex;align-items:center;gap:12px}
+.upload-item .info i{font-size:20px;color:var(--secondary-dark)}
+.upload-item .info div{font-size:13px;font-weight:600}
+.upload-item .info div span{display:block;font-size:11px;color:var(--text-secondary);font-weight:400}
+
+.company-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 2px 4px rgba(0,0,0,.02)}
+.company-card h3{font-size:16px;font-weight:700;margin-bottom:8px;color:var(--secondary-dark)}
+.company-card .meta{font-size:12px;color:var(--text-secondary);margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap}
+.company-card .courses{background:var(--background);padding:12px;border-radius:8px;font-size:13px;margin-bottom:12px;white-space:pre-wrap}
+.company-card .notes{font-size:12.5px;color:var(--text-secondary);font-style:italic}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.mobile-open{transform:translateX(0)}
+  .main{margin-left:0!important}
+  .content{padding:16px}
+}
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:150}
+.overlay.show{display:block}
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU">
+    <div class="txt">
+      <div class="n">Student Portal</div>
+      <div class="s">Samar State University</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <div class="nav-group">
+      <div class="nav-group-label">Menu</div>
+      <button class="nav-item active" data-view="concerns"><i class="fa-solid fa-headset"></i><span>Submit Concern</span></button>
+      <button class="nav-item" data-view="internship"><i class="fa-solid fa-file-pdf"></i><span>Internship Forms</span></button>
+      <button class="nav-item" data-view="companies"><i class="fa-solid fa-building"></i><span>Partner Companies</span></button>
+    </div>
+    <div class="nav-group" style="margin-top:auto">
+      <button class="nav-item danger" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
+    </div>
+  </nav>
+</aside>
+<div class="overlay" id="overlay"></div>
+
+<div class="main" id="main">
+  <header class="topbar">
+    <button class="icon-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    <div class="topbar-title" id="topbarTitle">Submit Concern</div>
+    <div class="topbar-user">
+      <div class="avatar" id="userAvatar">S</div>
+      <span id="userEmail">loading...</span>
+    </div>
+  </header>
+
+  <main class="content" id="content">
+    <div id="authGuard" class="empty"><i class="fa-solid fa-circle-notch fa-spin"></i><p>Verifying student access...</p></div>
+
+    <!-- CONCERNS VIEW -->
+    <section class="view" id="view-concerns">
+      <div class="page-head">
+        <div><h1>Submit a Concern</h1><p>Reach out to the OSAS Office. Your privacy is protected.</p></div>
+      </div>
+      <div id="concernAlert" class="alert"></div>
+      
+      <div class="card">
+        <div class="card-head"><h3>New Concern</h3></div>
+        <div class="form-grid">
+          <div class="field full"><label>Category*</label>
+            <select id="cf_cat">
+              <option value="">Select a category...</option>
+              <option>Academic</option>
+              <option>Financial/Welfare</option>
+              <option>Student Organization</option>
+              <option>Facilities</option>
+              <option>Harassment/Bullying</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field full"><label>Description*</label><textarea id="cf_desc" style="min-height:120px" placeholder="Describe your concern in detail..."></textarea></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.submitConcern()"><i class="fa-solid fa-paper-plane"></i> Submit Concern</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>My Submitted Concerns</h3></div>
+        <div id="myConcernsList"></div>
+      </div>
+    </section>
+
+    <!-- INTERNSHIP VIEW -->
+    <section class="view" id="view-internship">
+      <div class="page-head">
+        <div><h1>Internship Documents</h1><p>Upload your Entry and Exit forms (PDF only).</p></div>
+      </div>
+      <div id="internAlert" class="alert"></div>
+
+      <div class="card">
+        <div class="card-head"><h3>Upload New Document</h3></div>
+        <div class="form-grid">
+          <div class="field"><label>Document Type*</label>
+            <select id="doc_type">
+              <option value="">Select type...</option>
+              <option>Internship Entry Form</option>
+              <option>Internship Exit Form</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label>Upload PDF*</label>
+            <label class="file-upload-box" for="file_input">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <p>Click to browse or drag your PDF file here</p>
+              <input type="file" id="file_input" accept="application/pdf">
+              <div id="file_name" style="margin-top:10px;font-weight:600;color:var(--secondary-dark)"></div>
+            </label>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn btn-primary" id="uploadBtn" onclick="App.uploadDocument()"><i class="fa-solid fa-upload"></i> Upload Document</button>
+          <div id="uploadStatus" style="font-size:12px;color:var(--text-secondary);margin-top:8px;display:none;"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>My Uploaded Documents</h3></div>
+        <div id="myDocsList"></div>
+      </div>
+    </section>
+
+    <!-- PARTNER COMPANIES VIEW -->
+    <section class="view" id="view-companies">
+      <div class="page-head">
+        <div><h1>Partner Companies</h1><p>View accredited companies and the courses they are looking for.</p></div>
+        <button class="btn btn-outline" onclick="App.loadCompanies()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      
+      <div class="card" style="margin-bottom:16px">
+        <div class="toolbar">
+          <div class="search-box" style="position:relative;width:100%;max-width:400px">
+            <i class="fa-solid fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary)"></i>
+            <input type="text" id="compSearch" placeholder="Search company, location, or course..." style="width:100%;padding:10px 12px 10px 36px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;outline:none">
+          </div>
+        </div>
+      </div>
+
+      <div id="companiesList"></div>
+    </section>
+  </main>
+</div>
+
+<div id="toastHost"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { 
+  getFirestore, collection, doc, getDoc, getDocs, addDoc, query, where, 
+  serverTimestamp, Timestamp 
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAo5TKy65vg27n9Dkuh_PDnNT2byHndEY0",
+    authDomain: "forms-a9b1c.firebaseapp.com",
+    projectId: "forms-a9b1c",
+    storageBucket: "forms-a9b1c.firebasestorage.app",
+    messagingSenderId: "1076879732619",
+    appId: "1:1076879732619:web:89ba4135332ac30805898e",
+    measurementId: "G-88TF54KBKR"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const State = {
+  student: null,
+  myConcerns: [],
+  myDocs: [],
+  companies: []
+};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const toDate = v => {
+  if (!v) return null;
+  if (v instanceof Timestamp) return v.toDate();
+  if (typeof v.toDate === 'function') return v.toDate();
+  if (v.seconds) return new Date(v.seconds*1000);
+  const d = new Date(v); return isNaN(d) ? null : d;
+};
+const fmtDate = v => { const d = toDate(v); return d ? d.toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'}) : '-'; };
+
+function toast(msg, type='info'){
+  const host = $('toastHost');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.style.cssText = 'background:#fff;padding:12px 15px;border-radius:9px;font-size:13px;box-shadow:0 10px 30px -10px rgba(0,0,0,.2);margin-bottom:8px;border-left:4px solid ' + (type==='success'?'var(--success)':'var(--secondary-dark)');
+  el.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':'fa-circle-info'}"></i><span>${esc(msg)}</span>`;
+  host.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='.3s'; setTimeout(()=>el.remove(),300); }, 3800);
+}
+
+function alertBox(id, type, msg){
+  const el = $(id);
+  if (!el) return;
+  if (!msg){ el.className='alert'; el.textContent=''; return; }
+  el.className = 'alert show ' + type;
+  el.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':'fa-circle-info'}"></i><span>${esc(msg)}</span>`;
+}
+
+function emptyHTML(msg, icon='fa-inbox'){ return `<div class="empty"><i class="fa-solid ${icon}"></i><p>${esc(msg)}</p></div>`; }
+
+// ROUTER
+const VIEW_TITLES = {
+  concerns: 'Submit Concern',
+  internship: 'Internship Forms',
+  companies: 'Partner Companies'
+};
+
+function navigate(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el = $('view-'+view);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-item[data-view]').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  $('topbarTitle').textContent = VIEW_TITLES[view] || view;
+  
+  if (window.innerWidth <= 900){
+    $('sidebar').classList.remove('mobile-open');
+    $('overlay').classList.remove('show');
+  }
+}
+
+document.querySelectorAll('.nav-item[data-view]').forEach(btn=>{
+  btn.addEventListener('click', ()=>navigate(btn.dataset.view));
+});
+
+$('sidebarToggle').addEventListener('click', ()=>{
+  if (window.innerWidth <= 900){
+    $('sidebar').classList.toggle('mobile-open');
+    $('overlay').classList.toggle('show');
+  }
+});
+$('overlay').addEventListener('click', ()=>{
+  $('sidebar').classList.remove('mobile-open');
+  $('overlay').classList.remove('show');
+});
+
+$('logoutBtn').addEventListener('click', async ()=>{
+  await signOut(auth);
+  window.location.href = 'student_login.html';
+});
+
+// FILE INPUT DISPLAY
+$('file_input').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if (file){
+    const sizeMB = (file.size / (1024*1024)).toFixed(2);
+    $('file_name').textContent = `${file.name} (${sizeMB} MB)`;
+  } else {
+    $('file_name').textContent = '';
+  }
+});
+
+// DATA FETCHERS
+async function loadMyConcerns(){
+  const q = query(collection(db, 'osas_concerns'), where('studentEmail', '==', State.student.email));
+  const snap = await getDocs(q);
+  State.myConcerns = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+  State.myConcerns.sort((a,b)=>(toDate(b.createdAt)?.getTime()||0)-(toDate(a.createdAt)?.getTime()||0));
+  renderMyConcerns();
+}
+
+function renderMyConcerns(){
+  if (!State.myConcerns.length){ $('myConcernsList').innerHTML = emptyHTML('You have not submitted any concerns yet.','fa-headset'); return; }
+  $('myConcernsList').innerHTML = State.myConcerns.map(c=>`
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;background:#fff">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <strong style="font-size:14px">${esc(c.category)}</strong>
+        <span class="badge ${String(c.status||'').toLowerCase().replace(/\s+/g,'')}">${esc(c.status||'Pending')}</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">${esc(c.description)}</p>
+      <div style="font-size:11px;color:var(--text-secondary)">Submitted on ${fmtDate(c.createdAt)}</div>
+    </div>
+  `).join('');
+}
+
+async function loadMyDocs(){
+  const q = query(collection(db, 'osas_internships'), where('studentEmail', '==', State.student.email));
+  const snap = await getDocs(q);
+  State.myDocs = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+  State.myDocs.sort((a,b)=>(toDate(b.createdAt)?.getTime()||0)-(toDate(a.createdAt)?.getTime()||0));
+  renderMyDocs();
+}
+
+function renderMyDocs(){
+  if (!State.myDocs.length){ $('myDocsList').innerHTML = emptyHTML('No documents uploaded yet.','fa-file-pdf'); return; }
+  $('myDocsList').innerHTML = State.myDocs.map(d=>`
+    <div class="upload-item">
+      <div class="info">
+        <i class="fa-solid fa-file-pdf"></i>
+        <div>
+          ${esc(d.docType)}
+          <span>Uploaded on ${fmtDate(d.createdAt)}</span>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-sm btn-outline" onclick="App.viewDoc('${d.id}')"><i class="fa-solid fa-eye"></i> View</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadCompanies(){
+  try {
+    const snap = await getDocs(collection(db, 'osas_partner_companies'));
+    State.companies = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    State.companies.sort((a,b)=>(toDate(b.createdAt)?.getTime()||0)-(toDate(a.createdAt)?.getTime()||0));
+  } catch(e){
+    console.warn('load companies failed', e);
+    State.companies = [];
+  }
+  renderCompanies();
+}
+
+function renderCompanies(){
+  const term = ($('compSearch').value||'').toLowerCase().trim();
+  const rows = State.companies.filter(c => {
+    if (!term) return true;
+    return ((c.name||'') + ' ' + (c.location||'') + ' ' + (c.courses||'')).toLowerCase().includes(term);
+  });
+
+  if (!rows.length) {
+    $('companiesList').innerHTML = emptyHTML('No partner companies found.', 'fa-building');
+    return;
+  }
+
+  $('companiesList').innerHTML = rows.map(c => `
+    <div class="company-card">
+      <h3>${esc(c.name)}</h3>
+      <div class="meta">
+        ${c.location ? `<span><i class="fa-solid fa-location-dot"></i> ${esc(c.location)}</span>` : ''}
+        <span><i class="fa-regular fa-calendar"></i> Added ${fmtDate(c.createdAt)}</span>
+      </div>
+      <div class="courses">
+        <strong style="display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--secondary-dark)">Courses Looking For</strong>
+        ${esc(c.courses)}
+      </div>
+      ${c.notes ? `<div class="notes"><i class="fa-solid fa-circle-info"></i> ${esc(c.notes)}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+$('compSearch').addEventListener('input', renderCompanies);
+
+// ACTION: Submit Concern
+async function submitConcern(){
+  const cat = $('cf_cat').value;
+  const desc = $('cf_desc').value.trim();
+  const err = $('concernAlert');
+  
+  if (!cat || !desc){
+    alertBox('concernAlert', 'error', 'Please fill in both category and description.');
+    return;
+  }
+  
+  const btn = event.target.closest('button');
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+  
+  try {
+    await addDoc(collection(db, 'osas_concerns'), {
+      studentName: State.student.name,
+      studentEmail: State.student.email,
+      category: cat,
+      description: desc,
+      status: 'Pending',
+      dateReceived: new Date().toISOString().slice(0,10),
+      createdAt: serverTimestamp(),
+      createdBy: State.student.uid
+    });
+    alertBox('concernAlert', 'success', 'Concern submitted successfully. OSAS will review it shortly.');
+    $('cf_cat').value = ''; $('cf_desc').value = '';
+    await loadMyConcerns();
+  } catch(e){
+    alertBox('concernAlert', 'error', 'Submission failed: ' + e.message);
+  }
+  
+  btn.disabled = false; btn.innerHTML = orig;
+}
+
+// ACTION: Upload Document (Base64 & Auto-Compress)
+async function uploadDocument(){
+  const type = $('doc_type').value;
+  const file = $('file_input').files[0];
+  const err = $('internAlert');
+  const statusEl = $('uploadStatus');
+  
+  if (!type || !file){
+    alertBox('internAlert', 'error', 'Please select a document type and a PDF file.');
+    return;
+  }
+  if (file.type !== 'application/pdf'){
+    alertBox('internAlert', 'error', 'Only PDF files are allowed.');
+    return;
+  }
+
+  const MAX_SIZE = 750 * 1024; 
+  if (file.size > MAX_SIZE) {
+    alertBox('internAlert', 'warning', 
+      `Your file is too large (${(file.size/1024/1024).toFixed(2)} MB). ` +
+      `Please compress it to under 750 KB using https://www.ilovepdf.com/compress_pdf and upload again.`
+    );
+    return;
+  }
+
+  const btn = $('uploadBtn');
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+  statusEl.style.display = 'block';
+  statusEl.textContent = 'Reading file and converting to Base64...';
+
+  try {
+    const base64Data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    statusEl.textContent = 'Saving to database...';
+
+    await addDoc(collection(db, 'osas_internships'), {
+      studentName: State.student.name,
+      studentEmail: State.student.email,
+      docType: type,
+      fileName: file.name,
+      fileData: base64Data,
+      fileMime: 'application/pdf',
+      createdAt: serverTimestamp(),
+      createdBy: State.student.uid
+    });
+
+    alertBox('internAlert', 'success', 'Document uploaded successfully.');
+    $('doc_type').value = ''; $('file_input').value = ''; $('file_name').textContent = '';
+    statusEl.style.display = 'none';
+    await loadMyDocs();
+  } catch(e){
+    console.error(e);
+    alertBox('internAlert', 'error', 'Upload failed: ' + e.message);
+    statusEl.style.display = 'none';
+  }
+  
+  btn.disabled = false; btn.innerHTML = orig;
+}
+
+// ACTION: View Document from Base64
+async function viewDoc(docId){
+  const docRef = doc(db, 'osas_internships', docId);
+  const docSnap = await getDoc(docRef);
+  
+  if (!docSnap.exists()) return;
+  const data = docSnap.data();
+  
+  if (!data.fileData) {
+    alert('File data is missing.');
+    return;
+  }
+
+  try {
+    const byteCharacters = atob(data.fileData);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {type: data.fileMime || 'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  } catch (e) {
+    console.error('Error opening PDF:', e);
+    alert('Could not open PDF: ' + e.message);
+  }
+}
+
+window.App = { submitConcern, uploadDocument, viewDoc, loadCompanies };
+
+// AUTH GUARD
+onAuthStateChanged(auth, async (user) => {
+  if (!user){
+    window.location.href = 'student_login.html';
+    return;
+  }
+  try {
+    const snap = await getDoc(doc(db, 'students', user.uid));
+    if (!snap.exists()){
+      State.student = { uid: user.uid, email: user.email, name: user.email.split('@')[0] };
+    } else {
+      State.student = { uid: user.uid, email: user.email, name: snap.data().name };
+    }
+    
+    $('userEmail').textContent = State.student.email;
+    $('userAvatar').textContent = State.student.name ? State.student.name[0].toUpperCase() : 'S';
+    $('authGuard').style.display = 'none';
+    
+    await Promise.all([loadMyConcerns(), loadMyDocs(), loadCompanies()]);
+    navigate('concerns');
+  } catch(e){
+    console.error('Auth error:', e);
+    $('authGuard').innerHTML = `<div class="alert error show"><i class="fa-solid fa-circle-exclamation"></i><span>Error: ${esc(e.message)}</span></div>`;
+  }
+});
+</script>
+</body>
+</html>

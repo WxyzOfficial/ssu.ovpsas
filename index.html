@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSAS Office Management System | Samar State University</title>
+<link rel="icon" type="image/jpeg" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --primary:#ffffff;--secondary:#38bdf8;--secondary-dark:#0284c7;
+  --background:#f8fafc;--text-primary:#1e293b;--text-secondary:#64748b;
+  --border:#e2e8f0;--success:#16a34a;--warning:#f59e0b;--danger:#dc2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--text-primary);background:var(--primary);line-height:1.6}
+a{text-decoration:none;color:inherit}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+/* Nav */
+nav.navbar{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--secondary)}
+.brand-text .name{font-weight:700;font-size:15px;line-height:1.2}
+.brand-text .sub{font-size:12px;color:var(--text-secondary)}
+.nav-links{display:flex;align-items:center;gap:8px}
+.nav-links a{padding:8px 14px;border-radius:8px;font-size:14px;font-weight:500;color:var(--text-secondary);transition:.2s}
+.nav-links a:hover{color:var(--secondary-dark);background:var(--background)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:.2s;font-family:inherit}
+.btn-primary{background:var(--secondary);color:#fff}
+.btn-primary:hover{background:var(--secondary-dark);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--secondary-dark);border:1.5px solid var(--secondary)}
+.btn-outline:hover{background:var(--secondary);color:#fff}
+.btn-student{background:#0f172a;color:#fff}
+.btn-student:hover{background:#1e293b;transform:translateY(-1px)}
+.menu-toggle{display:none;background:none;border:none;font-size:22px;color:var(--text-primary);cursor:pointer}
+.mobile-menu{display:none;flex-direction:column;padding:12px 24px 20px;border-top:1px solid var(--border);gap:4px;background:#fff}
+.mobile-menu.open{display:flex}
+.mobile-menu a{padding:12px;border-radius:8px;font-weight:500;color:var(--text-secondary)}
+
+/* Hero */
+.hero{padding:80px 0 60px;background:linear-gradient(180deg,#f0f9ff 0%,#ffffff 100%)}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:60px;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:#e0f2fe;color:var(--secondary-dark);padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:20px}
+.hero h1{font-size:44px;line-height:1.15;font-weight:800;letter-spacing:-.5px;margin-bottom:20px}
+.hero h1 span{color:var(--secondary-dark)}
+.hero p{font-size:17px;color:var(--text-secondary);margin-bottom:32px;max-width:540px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+.hero-visual{position:relative;display:flex;justify-content:center}
+.hero-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:28px;box-shadow:0 20px 50px -20px rgba(2,132,199,.25);width:100%;max-width:400px}
+.hero-card .hc-head{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.hero-card .hc-head img{width:40px;height:40px;border-radius:50%}
+.hero-card .hc-head div strong{display:block;font-size:14px}
+.hero-card .hc-head div span{font-size:12px;color:var(--text-secondary)}
+.stat-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed var(--border);font-size:14px}
+.stat-row:last-child{border:none}
+.stat-row .label{color:var(--text-secondary)}
+.stat-row .val{font-weight:700;color:var(--secondary-dark)}
+
+/* Section Head */
+section{padding:70px 0}
+.section-head{text-align:center;max-width:640px;margin:0 auto 48px}
+.section-head .eyebrow{color:var(--secondary-dark);font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.section-head h2{font-size:34px;font-weight:800;letter-spacing:-.5px;margin-bottom:12px}
+.section-head p{color:var(--text-secondary);font-size:16px}
+
+/* Role Cards */
+.roles-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+.role-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:32px;transition:.25s;box-shadow:0 4px 6px -1px rgba(0,0,0,.05);display:flex;flex-direction:column}
+.role-card:hover{transform:translateY(-4px);box-shadow:0 20px 40px -20px rgba(2,132,199,.4);border-color:#bae6fd}
+.role-icon{width:56px;height:56px;border-radius:14px;background:#e0f2fe;color:var(--secondary-dark);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:20px}
+.role-card h3{font-size:20px;font-weight:700;margin-bottom:12px}
+.role-card p{font-size:14px;color:var(--text-secondary);margin-bottom:24px;flex:1}
+.role-card .btn{width:100%;justify-content:center}
+
+/* Features */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
+.feature-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;transition:.25s;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.feature-card:hover{transform:translateY(-4px);box-shadow:0 18px 40px -20px rgba(2,132,199,.35);border-color:#bae6fd}
+.feature-icon{width:52px;height:52px;border-radius:12px;background:#e0f2fe;color:var(--secondary-dark);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:18px}
+.feature-card h3{font-size:17px;font-weight:700;margin-bottom:8px}
+.feature-card p{font-size:14px;color:var(--text-secondary)}
+
+/* About */
+.about{background:var(--background)}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.about h2{font-size:32px;font-weight:800;margin-bottom:20px;letter-spacing:-.5px}
+.about p{color:var(--text-secondary);margin-bottom:16px;font-size:15px}
+.about-list{list-style:none;margin-top:24px;display:flex;flex-direction:column;gap:14px}
+.about-list li{display:flex;align-items:flex-start;gap:12px;font-size:14px}
+.about-list li i{color:var(--success);margin-top:4px}
+.about-visual{background:#fff;border-radius:20px;padding:36px;border:1px solid var(--border);text-align:center;box-shadow:0 10px 40px -20px rgba(0,0,0,.1)}
+.about-visual img{width:110px;height:110px;border-radius:50%;object-fit:cover;border:4px solid #e0f2fe;margin-bottom:20px}
+.about-visual h3{font-size:18px;margin-bottom:6px}
+.about-visual .univ{color:var(--secondary-dark);font-size:14px;font-weight:600;margin-bottom:20px}
+.about-visual .office{margin-top:16px;font-size:13px;color:var(--text-secondary);padding-top:16px;border-top:1px solid var(--border)}
+
+/* Footer */
+footer{background:#0f172a;color:#cbd5e1;padding:56px 0 24px;margin-top:40px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;margin-bottom:40px}
+footer h4{color:#fff;font-size:15px;font-weight:700;margin-bottom:16px}
+footer p{font-size:13px;color:#94a3b8;line-height:1.7}
+.footer-brand{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.footer-brand img{width:44px;height:44px;border-radius:50%}
+.footer-brand .name{color:#fff;font-weight:700;font-size:15px}
+.footer-brand .sub{font-size:12px;color:#94a3b8}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-links li{font-size:13px}
+.footer-links a:hover{color:var(--secondary)}
+.footer-contact li{display:flex;gap:10px;font-size:13px;margin-bottom:10px;color:#94a3b8}
+.footer-contact i{color:var(--secondary);margin-top:3px}
+.footer-bottom{border-top:1px solid #1e293b;padding-top:24px;text-align:center;font-size:12px;color:#64748b}
+
+/* Responsive */
+@media(max-width:900px){
+  .hero-grid,.about-grid{grid-template-columns:1fr;gap:40px}
+  .hero h1{font-size:34px}
+  .hero-visual{order:-1}
+  .footer-grid{grid-template-columns:1fr;gap:32px}
+}
+@media(max-width:720px){
+  .nav-links{display:none}
+  .menu-toggle{display:block}
+  section{padding:50px 0}
+  .section-head h2{font-size:26px}
+  .hero{padding:50px 0 40px}
+  .hero h1{font-size:28px}
+  .hero-actions .btn{width:100%;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container nav-inner">
+    <a href="index.html" class="brand">
+      <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU Logo">
+      <div class="brand-text">
+        <div class="name">OSAS Management System</div>
+        <div class="sub">Samar State University</div>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="#roles">Portal Logins</a>
+      <a href="#features">Features</a>
+      <a href="#about">About OSAS</a>
+      <a href="student_login.html" class="btn btn-student"><i class="fa-solid fa-user-graduate"></i> Student Portal</a>
+      <a href="login.html" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Staff Login</a>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#roles">Portal Logins</a>
+    <a href="#features">Features</a>
+    <a href="#about">About OSAS</a>
+    <a href="student_login.html" class="btn btn-student" style="justify-content:center;margin-top:8px"><i class="fa-solid fa-user-graduate"></i> Student Portal</a>
+    <a href="login.html" class="btn btn-primary" style="justify-content:center;margin-top:8px"><i class="fa-solid fa-right-to-bracket"></i> Staff Login</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="hero-badge"><i class="fa-solid fa-shield-halved"></i> Official Administrative Platform</span>
+      <h1>Centralized <span>Student Affairs</span> Management for SSU</h1>
+      <p>A secure, unified platform for managing student information, appointments, documents, activities, organizations, and reports — built for the Office of Student Affairs and Services at Samar State University.</p>
+      <div class="hero-actions">
+        <a href="student_login.html" class="btn btn-student"><i class="fa-solid fa-user-graduate"></i> Student Portal</a>
+        <a href="login.html" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Staff Login</a>
+        <a href="#roles" class="btn btn-outline"><i class="fa-solid fa-layer-group"></i> View Portals</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card">
+        <div class="hc-head">
+          <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU">
+          <div><strong>OSAS Dashboard</strong><span>Live Operations Overview</span></div>
+        </div>
+        <div class="stat-row"><span class="label"><i class="fa-solid fa-file-lines"></i> Student Records</span><span class="val">Centralized</span></div>
+        <div class="stat-row"><span class="label"><i class="fa-solid fa-calendar-check"></i> Appointments</span><span class="val">Tracked</span></div>
+        <div class="stat-row"><span class="label"><i class="fa-solid fa-folder-open"></i> Documents</span><span class="val">Monitored</span></div>
+        <div class="stat-row"><span class="label"><i class="fa-solid fa-chart-line"></i> Reports</span><span class="val">Real-time</span></div>
+        <div class="stat-row"><span class="label"><i class="fa-solid fa-lock"></i> Access</span><span class="val">Authorized Only</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Roles / Portals Section -->
+<section id="roles" style="background:#fff">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Access Points</div>
+      <h2>Choose Your Portal</h2>
+      <p>Log in to the specific dashboard assigned to your role.</p>
+    </div>
+    <div class="roles-grid">
+      <!-- Student -->
+      <div class="role-card">
+        <div class="role-icon"><i class="fa-solid fa-user-graduate"></i></div>
+        <h3>Student Portal</h3>
+        <p>For students. Submit concerns, upload internship Entry/Exit forms, and view partner companies looking for interns.</p>
+      </div>
+      <!-- Admin / OSAS -->
+      <div class="role-card">
+        <div class="role-icon"><i class="fa-solid fa-user-shield"></i></div>
+        <h3>OSAS Administrator</h3>
+        <p>For OSAS staff. Full access to student records, appointments, document tracking, reports, and system settings.</p>
+      </div>
+      <!-- SWDS -->
+      <div class="role-card">
+        <div class="role-icon"><i class="fa-solid fa-hands-holding-child"></i></div>
+        <h3>SWDS Office</h3>
+        <p>For Student Welfare and Development Services. Manage student organizations, accreditations, and view announcements.</p>
+      </div>
+      <!-- Internship -->
+      <div class="role-card">
+        <div class="role-icon"><i class="fa-solid fa-briefcase"></i></div>
+        <h3>Internship Office</h3>
+        <p>For Internship Coordinators. View student uploaded forms, manage partner companies, and view activities.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" style="background:var(--background)">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">System Capabilities</div>
+      <h2>Everything OSAS Needs in One Place</h2>
+      <p>Replace scattered spreadsheets and paperwork with a single, professional, secure platform designed for daily office use.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-user-graduate"></i></div>
+        <h3>Student Information</h3>
+        <p>Retrieve, search, filter, and view complete student responses from all OSAS forms with dynamic field mapping.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-calendar-check"></i></div>
+        <h3>Appointments</h3>
+        <p>Schedule, approve, reschedule, and track student appointments with personnel assignment and status history.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-folder-tree"></i></div>
+        <h3>Document Tracking</h3>
+        <p>Monitor incoming and outgoing documents from receipt to release with full status and history trail.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-bullhorn"></i></div>
+        <h3>Activities & Events</h3>
+        <p>Plan, organize, and report student activities with participation tracking and accomplishment reports.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-users-rectangle"></i></div>
+        <h3>Student Organizations</h3>
+        <p>Maintain accreditation records, advisers, officers, and member counts for every recognized organization.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-headset"></i></div>
+        <h3>Concerns & Follow-up</h3>
+        <p>Track student concerns confidentially from receipt through resolution with assigned personnel and notes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-list-check"></i></div>
+        <h3>Task Management</h3>
+        <p>Assign, prioritize, and monitor office tasks by employee with due dates and completion status.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-chart-pie"></i></div>
+        <h3>Reports & Analytics</h3>
+        <p>Generate print-friendly reports and exportable datasets across every module with date range filtering.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+        <h3>Activity Logs</h3>
+        <p>Every administrative action is recorded with administrator identity, action, and timestamp for accountability.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="about">
+  <div class="container about-grid">
+    <div>
+      <div class="eyebrow" style="color:var(--secondary-dark);font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">About the Office</div>
+      <h2>Office of Student Affairs and Services</h2>
+      <p>The Office of Student Affairs and Services (OSAS) of Samar State University is committed to the holistic development of students by providing programs and services that support their academic, personal, and social growth.</p>
+      <p>OSAS oversees student organizations, activities, welfare programs, guidance services, and student concerns. This management system empowers OSAS personnel with accurate, timely information to serve students efficiently and transparently.</p>
+      <ul class="about-list">
+        <li><i class="fa-solid fa-circle-check"></i> Centralized student records from OSAS forms</li>
+        <li><i class="fa-solid fa-circle-check"></i> Secure, role-verified administrator access</li>
+        <li><i class="fa-solid fa-circle-check"></i> Real-time monitoring of office transactions</li>
+        <li><i class="fa-solid fa-circle-check"></i> Complete audit trail of administrative actions</li>
+        <li><i class="fa-solid fa-circle-check"></i> Data-driven reports for decision-making</li>
+      </ul>
+    </div>
+    <div class="about-visual">
+      <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU Logo">
+      <h3>Samar State University</h3>
+      <div class="univ">Catbalogan City, Samar</div>
+      <p style="font-size:13px;color:var(--text-secondary)">A premier state university committed to excellence in instruction, research, extension, and production.</p>
+      <div class="office"><strong>Office of Student Affairs and Services</strong><br>OSAS Office Management System</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">
+          <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU">
+          <div>
+            <div class="name">Samar State University</div>
+            <div class="sub">Office of Student Affairs and Services</div>
+          </div>
+        </div>
+        <p>OSAS Office Management System — a centralized administrative platform for managing student information, office transactions, activities, and reports at Samar State University.</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#about">About OSAS</a></li>
+          <li><a href="student_login.html">Student Portal</a></li>
+          <li><a href="login.html">Staff Login</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact OSAS</h4>
+        <ul class="footer-contact">
+          <li><i class="fa-solid fa-location-dot"></i><span>Arteche Boulevard, Barangay Guindapunan, City of Catbalogan, Samar, 6700, Philippines</span></li>
+          <li><i class="fa-solid fa-envelope"></i><span>osas@ssu.edu.ph</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; <span id="yr"></span> 2026 Samar State University — Office of Student Affairs and Services. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('yr').textContent = new Date().getFullYear();
+const toggle = document.getElementById('menuToggle');
+const menu = document.getElementById('mobileMenu');
+toggle.addEventListener('click', () => {
+  menu.classList.toggle('open');
+  toggle.innerHTML = menu.classList.contains('open')
+    ? '<i class="fa-solid fa-xmark"></i>'
+    : '<i class="fa-solid fa-bars"></i>';
+});
+menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+  menu.classList.remove('open');
+  toggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+}));
+</script>
+</body>
+</html>

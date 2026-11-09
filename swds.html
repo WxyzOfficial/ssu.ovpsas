@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SWDS Dashboard | OSAS Management System</title>
+<link rel="icon" type="image/jpeg" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --primary:#ffffff;--secondary:#38bdf8;--secondary-dark:#0284c7;
+  --background:#f8fafc;--sidebar:#ffffff;--text-primary:#1e293b;
+  --text-secondary:#64748b;--border:#e2e8f0;--success:#16a34a;
+  --warning:#f59e0b;--danger:#dc2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--text-primary);background:var(--background);min-height:100vh}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit}
+
+/* ============ LAYOUT ============ */
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;transition:transform .25s, width .25s;overflow:hidden}
+.sidebar.collapsed{width:72px}
+.sidebar-head{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border);min-height:72px}
+.sidebar-head img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--secondary);flex-shrink:0}
+.sidebar-head .txt{overflow:hidden;white-space:nowrap}
+.sidebar-head .txt .n{font-weight:800;font-size:13px;line-height:1.2}
+.sidebar-head .txt .s{font-size:11px;color:var(--text-secondary)}
+.sidebar.collapsed .sidebar-head .txt{display:none}
+
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 8px}
+.nav-group{margin-bottom:6px}
+.nav-group-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-secondary);text-transform:uppercase;padding:10px 14px 6px;white-space:nowrap}
+.sidebar.collapsed .nav-group-label{text-align:center;font-size:9px;padding:8px 0 4px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:9px;font-size:13.5px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:.15s;white-space:nowrap;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.nav-item i{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-item span{overflow:hidden;text-overflow:ellipsis}
+.sidebar.collapsed .nav-item span{display:none}
+.sidebar.collapsed .nav-item{justify-content:center;padding:11px 0}
+.nav-item:hover{background:var(--background);color:var(--secondary-dark)}
+.nav-item.active{background:#e0f2fe;color:var(--secondary-dark);font-weight:600}
+.nav-item.active i{color:var(--secondary-dark)}
+.nav-item.danger{color:var(--danger)}
+.nav-item.danger:hover{background:#fef2f2;color:var(--danger)}
+
+.main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left .25s}
+.main.collapsed{margin-left:72px}
+
+/* Topbar */
+.topbar{height:64px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 24px;position:sticky;top:0;z-index:100}
+.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:.15s}
+.icon-btn:hover{background:var(--background);color:var(--secondary-dark)}
+.topbar-title{font-size:16px;font-weight:700;flex:1}
+.topbar-user{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-secondary)}
+.topbar-user .avatar{width:34px;height:34px;border-radius:50%;background:#e0f2fe;color:var(--secondary-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+/* Content */
+.content{padding:24px;flex:1;max-width:100%;overflow-x:hidden}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.page-head h1{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.page-head p{font-size:13px;color:var(--text-secondary);margin-top:3px}
+
+/* Cards */
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.card-head h3{font-size:15px;font-weight:700}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--secondary);color:#fff}
+.btn-primary:hover{background:var(--secondary-dark)}
+.btn-outline{background:#fff;color:var(--text-primary);border-color:var(--border)}
+.btn-outline:hover{border-color:var(--secondary);color:var(--secondary-dark)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#b91c1c}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:7px}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+
+/* Forms */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;color:var(--text-primary)}
+.field input,.field select,.field textarea{padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text-primary);background:#fff;outline:none;transition:.15s;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--secondary);box-shadow:0 0 0 3px rgba(56,189,248,.13)}
+.field textarea{resize:vertical;min-height:70px}
+
+/* Table */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}
+thead th{background:var(--background);text-align:left;padding:11px 14px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-secondary);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#fafcff}
+td .muted{color:var(--text-secondary);font-size:12px}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge.active{background:#dcfce7;color:#166534}
+.badge.inactive{background:#fee2e2;color:#991b1b}
+.badge.pending{background:#fef3c7;color:#92400e}
+.badge.accredited{background:#dcfce7;color:#166534}
+.badge.probationary{background:#fef3c7;color:#92400e}
+.badge.expired{background:#fee2e2;color:#991b1b}
+
+/* Toolbar */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.search-box{position:relative;flex:1;min-width:200px;max-width:340px}
+.search-box i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:13px}
+.search-box input{width:100%;padding:9px 11px 9px 34px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none}
+.search-box input:focus{border-color:var(--secondary)}
+
+/* Inline alerts */
+.alert{padding:11px 14px;border-radius:10px;font-size:13px;display:none;align-items:flex-start;gap:10px;margin-bottom:16px;line-height:1.4}
+.alert.show{display:flex}
+.alert.success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.alert.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.alert.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.alert.warning{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.alert i{margin-top:2px}
+
+/* Toast */
+#toastHost{position:fixed;top:78px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:340px}
+.toast{background:#fff;border-left:4px solid var(--secondary);border-radius:9px;padding:12px 15px;font-size:13px;box-shadow:0 10px 30px -10px rgba(0,0,0,.2);display:flex;gap:10px;align-items:flex-start;animation:slideIn .25s ease}
+.toast.success{border-left-color:var(--success)}
+.toast.error{border-left-color:var(--danger)}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Empty & loading */
+.empty{padding:40px 20px;text-align:center;color:var(--text-secondary)}
+.empty i{font-size:38px;color:var(--border);margin-bottom:12px;display:block}
+.empty p{font-size:13px}
+.loading{padding:40px;text-align:center;color:var(--text-secondary)}
+.loading .spin{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--secondary);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Views */
+.view{display:none}
+.view.active{display:block}
+.section-gap{display:flex;flex-direction:column;gap:16px}
+
+/* Announcement & Activity Cards */
+.feed-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:0 2px 4px rgba(0,0,0,.02)}
+.feed-card .meta{font-size:11.5px;color:var(--text-secondary);margin-bottom:10px;display:flex;gap:12px}
+.feed-card h3{font-size:16px;font-weight:700;margin-bottom:8px}
+.feed-card p{font-size:13.5px;color:var(--text-primary);line-height:1.5;white-space:pre-wrap}
+
+/* Mobile sidebar */
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:150}
+.overlay.show{display:block}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.mobile-open{transform:translateX(0)}
+  .main{margin-left:0!important}
+  .sidebar.collapsed{width:260px}
+  .sidebar.collapsed .nav-item span{display:inline}
+  .sidebar.collapsed .nav-item{justify-content:flex-start;padding:10px 14px}
+  .sidebar.collapsed .sidebar-head .txt{display:block}
+  .content{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU">
+    <div class="txt">
+      <div class="n">SWDS Portal</div>
+      <div class="s">Samar State University</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <button class="nav-item active" data-view="announcements"><i class="fa-solid fa-bullhorn"></i><span>Announcements</span></button>
+      <button class="nav-item" data-view="activities"><i class="fa-solid fa-calendar-days"></i><span>Activities & Events</span></button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Student Affairs</div>
+      <button class="nav-item" data-view="organizations"><i class="fa-solid fa-users-rectangle"></i><span>Student Organizations</span></button>
+    </div>
+    <div class="nav-group" style="margin-top:auto">
+      <button class="nav-item danger" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
+    </div>
+  </nav>
+</aside>
+<div class="overlay" id="overlay"></div>
+
+<!-- Main -->
+<div class="main" id="main">
+  <header class="topbar">
+    <button class="icon-btn" id="sidebarToggle" aria-label="Toggle sidebar"><i class="fa-solid fa-bars"></i></button>
+    <div class="topbar-title" id="topbarTitle">Announcements</div>
+    <div class="topbar-user">
+      <div class="avatar" id="userAvatar">S</div>
+      <span id="userEmail">loading...</span>
+    </div>
+  </header>
+
+  <main class="content" id="content">
+    <!-- Loading guard -->
+    <div id="authGuard" class="loading"><div class="spin"></div>Verifying SWDS access...</div>
+
+    <!-- ============ ANNOUNCEMENTS ============ -->
+    <section class="view" id="view-announcements">
+      <div class="page-head">
+        <div><h1>Announcements</h1><p>Latest updates from the OSAS Office.</p></div>
+        <button class="btn btn-outline" onclick="App.refreshAll()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div id="annAlert" class="alert"></div>
+      <div id="annList"></div>
+    </section>
+
+    <!-- ============ ACTIVITIES ============ -->
+    <section class="view" id="view-activities">
+      <div class="page-head">
+        <div><h1>Activities & Events</h1><p>Upcoming and ongoing student activities.</p></div>
+        <button class="btn btn-outline" onclick="App.refreshAll()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div id="actAlert" class="alert"></div>
+      <div class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="actSearch" placeholder="Search title, organizer, venue..."></div>
+      </div>
+      <div id="actList"></div>
+    </section>
+
+    <!-- ============ ORGANIZATIONS ============ -->
+    <section class="view" id="view-organizations">
+      <div class="page-head">
+        <div><h1>Student Organizations</h1><p>Manage and monitor accreditation status.</p></div>
+        <button class="btn btn-primary" onclick="App.showForm('organization')"><i class="fa-solid fa-plus"></i> New Organization</button>
+      </div>
+      <div id="orgAlert" class="alert"></div>
+      <div id="orgFormHost"></div>
+      <div class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="orgSearch" placeholder="Search organization or adviser..."></div>
+      </div>
+      <div id="orgTableWrap"></div>
+    </section>
+  </main>
+</div>
+
+<div id="toastHost"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, getDoc, getDocs,
+  addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ============================================================
+// FIREBASE CONFIG
+// ============================================================
+const firebaseConfig = {
+    apiKey: "AIzaSyAo5TKy65vg27n9Dkuh_PDnNT2byHndEY0",
+    authDomain: "forms-a9b1c.firebaseapp.com",
+    projectId: "forms-a9b1c",
+    storageBucket: "forms-a9b1c.firebasestorage.app",
+    messagingSenderId: "1076879732619",
+    appId: "1:1076879732619:web:89ba4135332ac30805898e",
+    measurementId: "G-88TF54KBKR"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+const State = {
+  admin: null,
+  currentView: 'announcements',
+  activities: [],
+  organizations: [],
+  announcements: []
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const toDate = v => {
+  if (!v) return null;
+  if (v instanceof Timestamp) return v.toDate();
+  if (typeof v.toDate === 'function') return v.toDate();
+  if (v.seconds) return new Date(v.seconds*1000);
+  const d = new Date(v); return isNaN(d) ? null : d;
+};
+const fmtDate = v => { const d = toDate(v); return d ? d.toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'}) : '-'; };
+const fmtDateTime = v => { const d = toDate(v); return d ? d.toLocaleString('en-PH',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '-'; };
+
+function toast(msg, type='info'){
+  const host = $('toastHost');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':type==='error'?'fa-circle-exclamation':'fa-circle-info'}"></i><span>${esc(msg)}</span>`;
+  host.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='.3s'; setTimeout(()=>el.remove(),300); }, 3800);
+}
+
+function alertBox(id, type, msg){
+  const el = $(id);
+  if (!el) return;
+  if (!msg){ el.className='alert'; el.textContent=''; return; }
+  el.className = 'alert show ' + type;
+  el.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':type==='error'?'fa-circle-exclamation':'fa-circle-info'}"></i><span>${esc(msg)}</span>`;
+}
+
+function emptyHTML(msg, icon='fa-inbox'){ return `<div class="empty"><i class="fa-solid ${icon}"></i><p>${esc(msg)}</p></div>`; }
+
+function badge(status){
+  const s = String(status||'').toLowerCase().replace(/\s+/g,'');
+  const map = {accredited:'accredited',probationary:'probationary',expired:'expired',pending:'pending'};
+  const cls = map[s] || 'pending';
+  return `<span class="badge ${cls}">${esc(status||'-')}</span>`;
+}
+
+// ============================================================
+// DATA LOADERS
+// ============================================================
+async function loadCollection(name, stateKey){
+  try {
+    const snap = await getDocs(collection(db, name));
+    State[stateKey] = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    State[stateKey].sort((a,b)=>{
+      const da = toDate(a.createdAt)?.getTime()||0;
+      const dbb = toDate(b.createdAt)?.getTime()||0;
+      return dbb-da;
+    });
+  } catch(err){
+    console.warn('load failed for', name, err);
+    State[stateKey] = [];
+  }
+}
+
+// ============================================================
+// VIEW ROUTER
+// ============================================================
+const VIEW_TITLES = {
+  announcements:'Announcements', activities:'Activities & Events', organizations:'Student Organizations'
+};
+
+function navigate(view){
+  State.currentView = view;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el = $('view-'+view);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-item[data-view]').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  $('topbarTitle').textContent = VIEW_TITLES[view] || view;
+  
+  if (window.innerWidth <= 900){
+    $('sidebar').classList.remove('mobile-open');
+    $('overlay').classList.remove('show');
+  }
+  
+  if (view==='announcements') renderAnnouncements();
+  if (view==='activities') renderActivities();
+  if (view==='organizations') renderOrganizations();
+}
+
+document.querySelectorAll('.nav-item[data-view]').forEach(btn=>{
+  btn.addEventListener('click', ()=>navigate(btn.dataset.view));
+});
+
+$('sidebarToggle').addEventListener('click', ()=>{
+  if (window.innerWidth <= 900){
+    $('sidebar').classList.toggle('mobile-open');
+    $('overlay').classList.toggle('show');
+  } else {
+    $('sidebar').classList.toggle('collapsed');
+    $('main').classList.toggle('collapsed');
+  }
+});
+$('overlay').addEventListener('click', ()=>{
+  $('sidebar').classList.remove('mobile-open');
+  $('overlay').classList.remove('show');
+});
+
+$('logoutBtn').addEventListener('click', async ()=>{
+  await signOut(auth);
+  window.location.href = 'login.html';
+});
+
+// ============================================================
+// ANNOUNCEMENTS VIEW
+// ============================================================
+function renderAnnouncements(){
+  if (!State.announcements.length){ $('annList').innerHTML = emptyHTML('No announcements yet.','fa-bullhorn'); return; }
+  $('annList').innerHTML = State.announcements.map(a=>`
+    <div class="feed-card">
+      <div class="meta">
+        <span><i class="fa-regular fa-clock"></i> ${fmtDate(a.createdAt)}</span>
+        <span><i class="fa-regular fa-user"></i> ${esc(a.author||'OSAS')}</span>
+        ${a.status === 'Draft' ? '<span class="badge pending">Draft</span>' : ''}
+      </div>
+      <h3>${esc(a.title)}</h3>
+      <p>${esc(a.content)}</p>
+    </div>`).join('');
+}
+
+// ============================================================
+// ACTIVITIES VIEW
+// ============================================================
+function renderActivities(){
+  const term = ($('actSearch').value||'').toLowerCase();
+  const rows = State.activities.filter(a=>{
+    if (!term) return true;
+    return ((a.title||'')+' '+(a.organizer||'')+' '+(a.venue||'')).toLowerCase().includes(term);
+  });
+  if (!rows.length){ $('actList').innerHTML = emptyHTML('No activities found.','fa-calendar-days'); return; }
+  
+  $('actList').innerHTML = rows.map(a=>`
+    <div class="feed-card">
+      <div class="meta">
+        <span><i class="fa-regular fa-calendar"></i> ${fmtDate(a.startDate)} ${a.endDate ? ' - '+fmtDate(a.endDate) : ''}</span>
+        <span><i class="fa-solid fa-location-dot"></i> ${esc(a.venue||'TBA')}</span>
+        ${badge(a.status)}
+      </div>
+      <h3>${esc(a.title)}</h3>
+      <p style="margin-bottom:10px">${esc(a.description||'')}</p>
+      <div style="font-size:12px;color:var(--text-secondary)">
+        <strong>Organizer:</strong> ${esc(a.organizer||'-')} | <strong>Category:</strong> ${esc(a.category||'-')}
+      </div>
+    </div>`).join('');
+}
+
+$('actSearch').addEventListener('input', renderActivities);
+
+// ============================================================
+// ORGANIZATIONS VIEW
+// ============================================================
+function renderOrganizations(){
+  const term = ($('orgSearch').value||'').toLowerCase();
+  const rows = State.organizations.filter(o=>{
+    if (!term) return true;
+    return ((o.name||'')+' '+(o.adviser||'')).toLowerCase().includes(term);
+  });
+  
+  if (!rows.length){ $('orgTableWrap').innerHTML = emptyHTML('No organizations found.','fa-users-rectangle'); return; }
+  
+  $('orgTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Name</th><th>Abbr</th><th>Adviser</th><th>President</th><th>Members</th><th>Status</th><th>Accredited</th><th>Expires</th><th>Actions</th></tr></thead>
+    <tbody>${rows.map(o=>`<tr>
+      <td><strong>${esc(o.name)}</strong></td>
+      <td>${esc(o.abbr||'-')}</td>
+      <td>${esc(o.adviser||'-')}</td>
+      <td>${esc(o.president||'-')}</td>
+      <td>${esc(o.members||0)}</td>
+      <td>${badge(o.accreditationStatus)}</td>
+      <td>${fmtDate(o.accreditationDate)}</td>
+      <td>${fmtDate(o.expirationDate)}</td>
+      <td>
+        <select style="padding:4px;border:1px solid var(--border);border-radius:6px;font-size:11.5px" onchange="App.updateOrgStatus('${o.id}',this.value)">
+          ${['Accredited','Probationary','Expired','Pending'].map(s=>`<option ${o.accreditationStatus===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+        <button class="btn btn-sm btn-outline" onclick="App.deleteRecord('osas_organizations','${o.id}','organizations','organization')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+$('orgSearch').addEventListener('input', renderOrganizations);
+
+function showForm(type){
+  const host = $('orgFormHost');
+  if (!host) return;
+  if (host.innerHTML.trim()){ host.innerHTML=''; return; }
+  
+  host.innerHTML = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-head"><h3>New Organization</h3><button class="btn btn-sm btn-outline" onclick="$('orgFormHost').innerHTML=''">Cancel</button></div>
+      <div class="form-grid">
+        <div class="field"><label>Organization Name*</label><input id="of_name"></div>
+        <div class="field"><label>Abbreviation</label><input id="of_abbr"></div>
+        <div class="field"><label>Adviser</label><input id="of_adviser"></div>
+        <div class="field"><label>President</label><input id="of_president"></div>
+        <div class="field"><label>Members</label><input type="number" id="of_members" min="0"></div>
+        <div class="field"><label>Accreditation Status</label><select id="of_status"><option>Accredited</option><option>Probationary</option><option>Expired</option><option>Pending</option></select></div>
+        <div class="field"><label>Accreditation Date</label><input type="date" id="of_accdate"></div>
+        <div class="field"><label>Expiration Date</label><input type="date" id="of_expdate"></div>
+        <div class="field full"><label>Remarks</label><textarea id="of_remarks"></textarea></div>
+      </div>
+      <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.createOrganization()"><i class="fa-solid fa-save"></i> Save Organization</button></div>
+      <div id="orgFormErr" class="alert error" style="margin-top:10px"></div>
+    </div>
+  `;
+}
+
+async function createOrganization(){
+  const name = $('of_name').value.trim();
+  const err = $('orgFormErr');
+  if (!name){ err.className='alert show error'; err.textContent='Organization name is required.'; return; }
+  err.className='alert';
+  try {
+    const r = await addDoc(collection(db,'osas_organizations'),{
+      name, abbr:$('of_abbr').value.trim(), adviser:$('of_adviser').value.trim(),
+      president:$('of_president').value.trim(),
+      members: parseInt($('of_members').value||'0',10)||0,
+      accreditationStatus:$('of_status').value,
+      accreditationDate:$('of_accdate').value || null,
+      expirationDate:$('of_expdate').value || null,
+      remarks:$('of_remarks').value.trim(),
+      createdAt: serverTimestamp(), createdBy: State.admin.uid
+    });
+    toast('Organization saved.','success');
+    $('orgFormHost').innerHTML='';
+    await loadCollection('osas_organizations','organizations');
+    renderOrganizations();
+  } catch(e){ console.error(e); err.className='alert show error'; err.textContent='Save failed: '+e.message; }
+}
+
+async function updateOrgStatus(id, status){
+  try {
+    await updateDoc(doc(db,'osas_organizations',id),{ accreditationStatus: status, updatedAt: serverTimestamp() });
+    toast('Accreditation status updated.','success');
+    await loadCollection('osas_organizations','organizations');
+    renderOrganizations();
+  } catch(e){ console.error(e); alertBox('orgAlert','error','Update failed: '+e.message); }
+}
+
+async function deleteRecord(col, id, stateKey, label){
+  const alertEl = $('orgAlert');
+  alertEl.className = 'alert show warning';
+  alertEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>
+    <span>Delete this ${label}? 
+      <button class="btn btn-sm btn-danger" style="margin-left:8px" id="confirmDel">Confirm Delete</button>
+      <button class="btn btn-sm btn-outline" style="margin-left:4px" id="cancelDel">Cancel</button>
+    </span>`;
+  $('cancelDel').onclick = ()=>{ alertEl.className='alert'; alertEl.textContent=''; };
+  $('confirmDel').onclick = async ()=>{
+    try {
+      await deleteDoc(doc(db,col,id));
+      alertEl.className='alert show success';
+      alertEl.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${label} deleted.</span>`;
+      await loadCollection(col, stateKey);
+      renderOrganizations();
+    } catch(e){
+      alertEl.className='alert show error';
+      alertEl.textContent = 'Delete failed: '+e.message;
+    }
+  };
+}
+
+// ============================================================
+// PUBLIC API
+// ============================================================
+window.App = {
+  refreshAll: async ()=>{
+    toast('Refreshing data...','info');
+    await Promise.all([
+      loadCollection('osas_announcements','announcements'),
+      loadCollection('osas_activities','activities'),
+      loadCollection('osas_organizations','organizations')
+    ]);
+    navigate(State.currentView);
+    toast('Data refreshed.','success');
+  },
+  showForm, createOrganization, updateOrgStatus, deleteRecord
+};
+
+// ============================================================
+// AUTH GUARD
+// ============================================================
+onAuthStateChanged(auth, async (user)=>{
+  if (!user){
+    window.location.href = 'login.html';
+    return;
+  }
+  try {
+    const snap = await getDoc(doc(db,'admins', user.uid));
+    // Allow access if active admin
+    if (!snap.exists() || snap.data().active !== true){
+      await signOut(auth);
+      window.location.href = 'login.html';
+      return;
+    }
+    
+    State.admin = { uid: user.uid, email: user.email };
+    $('userEmail').textContent = user.email;
+    $('userAvatar').textContent = (user.email||'S')[0].toUpperCase();
+    $('authGuard').style.display='none';
+
+    // Load relevant collections
+    await Promise.all([
+      loadCollection('osas_announcements','announcements'),
+      loadCollection('osas_activities','activities'),
+      loadCollection('osas_organizations','organizations')
+    ]);
+    
+    navigate('announcements');
+  } catch(e){
+    console.error('Auth guard error:', e);
+    $('authGuard').innerHTML = '<div class="alert error show"><i class="fa-solid fa-circle-exclamation"></i><span>Unable to load SWDS dashboard: '+esc(e.message)+'</span></div>';
+  }
+});
+</script>
+</body>
+</html>

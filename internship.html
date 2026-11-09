@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Internship Office | OSAS Management System</title>
+<link rel="icon" type="image/jpeg" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --primary:#ffffff;--secondary:#38bdf8;--secondary-dark:#0284c7;
+  --background:#f8fafc;--sidebar:#ffffff;--text-primary:#1e293b;
+  --text-secondary:#64748b;--border:#e2e8f0;--success:#16a34a;
+  --warning:#f59e0b;--danger:#dc2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--text-primary);background:var(--background);min-height:100vh}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit}
+
+/* Layout */
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;transition:transform .25s, width .25s;overflow:hidden}
+.sidebar.collapsed{width:72px}
+.sidebar-head{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border);min-height:72px}
+.sidebar-head img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--secondary);flex-shrink:0}
+.sidebar-head .txt{overflow:hidden;white-space:nowrap}
+.sidebar-head .txt .n{font-weight:800;font-size:13px;line-height:1.2}
+.sidebar-head .txt .s{font-size:11px;color:var(--text-secondary)}
+.sidebar.collapsed .sidebar-head .txt{display:none}
+
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 8px}
+.nav-group{margin-bottom:6px}
+.nav-group-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-secondary);text-transform:uppercase;padding:10px 14px 6px;white-space:nowrap}
+.sidebar.collapsed .nav-group-label{text-align:center;font-size:9px;padding:8px 0 4px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:9px;font-size:13.5px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:.15s;white-space:nowrap;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.nav-item i{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-item span{overflow:hidden;text-overflow:ellipsis}
+.sidebar.collapsed .nav-item span{display:none}
+.sidebar.collapsed .nav-item{justify-content:center;padding:11px 0}
+.nav-item:hover{background:var(--background);color:var(--secondary-dark)}
+.nav-item.active{background:#e0f2fe;color:var(--secondary-dark);font-weight:600}
+.nav-item.active i{color:var(--secondary-dark)}
+.nav-item.danger{color:var(--danger)}
+.nav-item.danger:hover{background:#fef2f2;color:var(--danger)}
+
+.main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left .25s}
+.main.collapsed{margin-left:72px}
+
+/* Topbar */
+.topbar{height:64px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 24px;position:sticky;top:0;z-index:100}
+.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:.15s}
+.icon-btn:hover{background:var(--background);color:var(--secondary-dark)}
+.topbar-title{font-size:16px;font-weight:700;flex:1}
+.topbar-user{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-secondary)}
+.topbar-user .avatar{width:34px;height:34px;border-radius:50%;background:#e0f2fe;color:var(--secondary-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+/* Content */
+.content{padding:24px;flex:1;max-width:100%;overflow-x:hidden}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.page-head h1{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.page-head p{font-size:13px;color:var(--text-secondary);margin-top:3px}
+
+/* Cards */
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.card-head h3{font-size:15px;font-weight:700}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--secondary);color:#fff}
+.btn-primary:hover{background:var(--secondary-dark)}
+.btn-outline{background:#fff;color:var(--text-primary);border-color:var(--border)}
+.btn-outline:hover{border-color:var(--secondary);color:var(--secondary-dark)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:7px}
+
+/* Forms & Table */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;color:var(--text-primary)}
+.field input,.field select,.field textarea{padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text-primary);background:#fff;outline:none;transition:.15s;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--secondary);box-shadow:0 0 0 3px rgba(56,189,248,.13)}
+.field textarea{resize:vertical;min-height:70px}
+
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}
+thead th{background:var(--background);text-align:left;padding:11px 14px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-secondary);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#fafcff}
+td .muted{color:var(--text-secondary);font-size:12px}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge.success{background:#dcfce7;color:#166534}
+.badge.warning{background:#fef3c7;color:#92400e}
+
+.alert{padding:11px 14px;border-radius:10px;font-size:13px;display:none;align-items:flex-start;gap:10px;margin-bottom:16px;line-height:1.4}
+.alert.show{display:flex}
+.alert.success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.alert.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.alert.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+
+.empty{padding:40px 20px;text-align:center;color:var(--text-secondary)}
+.empty i{font-size:38px;color:var(--border);margin-bottom:12px;display:block}
+.empty p{font-size:13px}
+
+.view{display:none}
+.view.active{display:block}
+
+/* Specific for Cards */
+.feed-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:0 2px 4px rgba(0,0,0,.02)}
+.feed-card .meta{font-size:11.5px;color:var(--text-secondary);margin-bottom:10px;display:flex;gap:12px}
+.feed-card h3{font-size:16px;font-weight:700;margin-bottom:8px}
+.feed-card p{font-size:13.5px;color:var(--text-primary);line-height:1.5;white-space:pre-wrap}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.mobile-open{transform:translateX(0)}
+  .main{margin-left:0!important}
+  .sidebar.collapsed{width:260px}
+  .sidebar.collapsed .nav-item span{display:inline}
+  .sidebar.collapsed .nav-item{justify-content:flex-start;padding:10px 14px}
+  .sidebar.collapsed .sidebar-head .txt{display:block}
+  .content{padding:16px}
+}
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:150}
+.overlay.show{display:block}
+</style>
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU">
+    <div class="txt">
+      <div class="n">Internship Office</div>
+      <div class="s">Samar State University</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <div class="nav-group">
+      <div class="nav-group-label">Student Forms</div>
+      <button class="nav-item active" data-view="students"><i class="fa-solid fa-folder-open"></i><span>Student Documents</span></button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Partnerships</div>
+      <button class="nav-item" data-view="companies"><i class="fa-solid fa-building"></i><span>Partner Companies</span></button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Updates</div>
+      <button class="nav-item" data-view="announcements"><i class="fa-solid fa-bullhorn"></i><span>Announcements</span></button>
+      <button class="nav-item" data-view="activities"><i class="fa-solid fa-calendar-days"></i><span>Activities & Events</span></button>
+    </div>
+    <div class="nav-group" style="margin-top:auto">
+      <button class="nav-item danger" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
+    </div>
+  </nav>
+</aside>
+<div class="overlay" id="overlay"></div>
+
+<div class="main" id="main">
+  <header class="topbar">
+    <button class="icon-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    <div class="topbar-title" id="topbarTitle">Student Documents</div>
+    <div class="topbar-user">
+      <div class="avatar" id="userAvatar">I</div>
+      <span id="userEmail">loading...</span>
+    </div>
+  </header>
+
+  <main class="content" id="content">
+    <div id="authGuard" class="empty"><i class="fa-solid fa-circle-notch fa-spin"></i><p>Verifying internship office access...</p></div>
+
+    <!-- STUDENT DOCUMENTS VIEW -->
+    <section class="view" id="view-students">
+      <div class="page-head">
+        <div><h1>Student Internship Forms</h1><p>View and search uploaded Entry and Exit forms.</p></div>
+        <button class="btn btn-outline" onclick="App.refreshAll()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div id="studentAlert" class="alert"></div>
+      <div class="card">
+        <div class="toolbar" style="margin-bottom:16px">
+          <div class="search-box" style="position:relative;width:100%;max-width:400px">
+            <i class="fa-solid fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary)"></i>
+            <input type="text" id="studentSearch" placeholder="Search student name or email..." style="width:100%;padding:10px 12px 10px 36px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;outline:none">
+          </div>
+        </div>
+        <div id="studentsTableWrap"></div>
+      </div>
+    </section>
+
+    <!-- PARTNER COMPANIES VIEW -->
+    <section class="view" id="view-companies">
+      <div class="page-head">
+        <div><h1>Partner Companies</h1><p>Manage partner companies and the courses they are looking for.</p></div>
+      </div>
+      <div id="companyAlert" class="alert"></div>
+      
+      <div class="card">
+        <div class="card-head"><h3>Add New Partner Company</h3></div>
+        <div class="form-grid">
+          <div class="field"><label>Company Name*</label><input id="comp_name" placeholder="e.g. Tech Corp Inc."></div>
+          <div class="field"><label>Location</label><input id="comp_location" placeholder="e.g. Catbalogan City"></div>
+          <div class="field full"><label>Courses Looking For*</label><textarea id="comp_courses" placeholder="e.g. BS Computer Science, BS Information Technology, BS Accountancy"></textarea></div>
+          <div class="field full"><label>Additional Notes</label><textarea id="comp_notes" placeholder="Any other requirements or details..."></textarea></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.createCompany()"><i class="fa-solid fa-save"></i> Save Company</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>List of Partner Companies</h3>
+          <div class="search-box" style="max-width:300px">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" id="companySearch" placeholder="Search company or course...">
+          </div>
+        </div>
+        <div id="companiesTableWrap"></div>
+      </div>
+    </section>
+
+    <!-- ANNOUNCEMENTS VIEW -->
+    <section class="view" id="view-announcements">
+      <div class="page-head">
+        <div><h1>Announcements</h1><p>Latest updates from the OSAS Office.</p></div>
+        <button class="btn btn-outline" onclick="App.refreshAll()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div id="annList"></div>
+    </section>
+
+    <!-- ACTIVITIES VIEW -->
+    <section class="view" id="view-activities">
+      <div class="page-head">
+        <div><h1>Activities & Events</h1><p>Upcoming and ongoing student activities.</p></div>
+        <button class="btn btn-outline" onclick="App.refreshAll()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div class="toolbar" style="margin-bottom:16px">
+        <div class="search-box" style="position:relative;width:100%;max-width:400px">
+          <i class="fa-solid fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary)"></i>
+          <input type="text" id="actSearch" placeholder="Search title, organizer, venue..." style="width:100%;padding:10px 12px 10px 36px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;outline:none">
+        </div>
+      </div>
+      <div id="actList"></div>
+    </section>
+  </main>
+</div>
+
+<div id="toastHost"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { 
+  getFirestore, collection, doc, getDoc, getDocs, addDoc, deleteDoc, query, where, orderBy, Timestamp, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAo5TKy65vg27n9Dkuh_PDnNT2byHndEY0",
+    authDomain: "forms-a9b1c.firebaseapp.com",
+    projectId: "forms-a9b1c",
+    storageBucket: "forms-a9b1c.firebasestorage.app",
+    messagingSenderId: "1076879732619",
+    appId: "1:1076879732619:web:89ba4135332ac30805898e",
+    measurementId: "G-88TF54KBKR"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const State = {
+  admin: null,
+  currentView: 'students',
+  internships: [],
+  announcements: [],
+  activities: [],
+  companies: []
+};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const toDate = v => {
+  if (!v) return null;
+  if (v instanceof Timestamp) return v.toDate();
+  if (typeof v.toDate === 'function') return v.toDate();
+  if (v.seconds) return new Date(v.seconds*1000);
+  const d = new Date(v); return isNaN(d) ? null : d;
+};
+const fmtDate = v => { const d = toDate(v); return d ? d.toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'}) : '-'; };
+const fmtDateTime = v => { const d = toDate(v); return d ? d.toLocaleString('en-PH',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '-'; };
+
+function toast(msg, type='info'){
+  const host = $('toastHost');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.style.cssText = 'background:#fff;padding:12px 15px;border-radius:9px;font-size:13px;box-shadow:0 10px 30px -10px rgba(0,0,0,.2);margin-bottom:8px;border-left:4px solid ' + (type==='success'?'var(--success)':'var(--secondary-dark)');
+  el.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':'fa-circle-info'}"></i><span>${esc(msg)}</span>`;
+  host.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='.3s'; setTimeout(()=>el.remove(),300); }, 3800);
+}
+
+function alertBox(id, type, msg){
+  const el = $(id);
+  if (!el) return;
+  if (!msg){ el.className='alert'; el.textContent=''; return; }
+  el.className = 'alert show ' + type;
+  el.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':'fa-circle-info'}"></i><span>${esc(msg)}</span>`;
+}
+
+function emptyHTML(msg, icon='fa-inbox'){ return `<div class="empty"><i class="fa-solid ${icon}"></i><p>${esc(msg)}</p></div>`; }
+
+function badge(status){
+  const s = String(status||'').toLowerCase().replace(/\s+/g,'');
+  const map = {accredited:'success',probationary:'warning',expired:'danger',pending:'warning'};
+  const cls = map[s] || 'pending';
+  return `<span class="badge ${cls}">${esc(status||'-')}</span>`;
+}
+
+// DATA LOADERS
+async function loadInternships(){
+  try {
+    const snap = await getDocs(collection(db, 'osas_internships'));
+    State.internships = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    State.internships.sort((a,b)=>(toDate(b.createdAt)?.getTime()||0)-(toDate(a.createdAt)?.getTime()||0));
+  } catch(e){
+    console.warn('load internships failed', e);
+    State.internships = [];
+  }
+  renderStudents();
+}
+
+async function loadAnnouncements(){
+  try {
+    const snap = await getDocs(collection(db, 'osas_announcements'));
+    State.announcements = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    State.announcements.sort((a,b)=>(toDate(b.createdAt)?.getTime()||0)-(toDate(a.createdAt)?.getTime()||0));
+  } catch(e){
+    State.announcements = [];
+  }
+  renderAnnouncements();
+}
+
+async function loadActivities(){
+  try {
+    const snap = await getDocs(collection(db, 'osas_activities'));
+    State.activities = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    State.activities.sort((a,b)=>(toDate(b.createdAt)?.getTime()||0)-(toDate(a.createdAt)?.getTime()||0));
+  } catch(e){
+    State.activities = [];
+  }
+  renderActivities();
+}
+
+async function loadCompanies(){
+  try {
+    const snap = await getDocs(collection(db, 'osas_partner_companies'));
+    State.companies = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    State.companies.sort((a,b)=>(toDate(b.createdAt)?.getTime()||0)-(toDate(a.createdAt)?.getTime()||0));
+  } catch(e){
+    console.warn('load companies failed', e);
+    State.companies = [];
+  }
+  renderCompanies();
+}
+
+// ROUTER
+const VIEW_TITLES = { 
+  students:'Student Documents', 
+  companies:'Partner Companies', 
+  announcements:'Announcements', 
+  activities:'Activities & Events' 
+};
+
+function navigate(view){
+  State.currentView = view;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el = $('view-'+view);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-item[data-view]').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  $('topbarTitle').textContent = VIEW_TITLES[view] || view;
+  
+  if (window.innerWidth <= 900){
+    $('sidebar').classList.remove('mobile-open');
+    $('overlay').classList.remove('show');
+  }
+}
+
+document.querySelectorAll('.nav-item[data-view]').forEach(btn=>{
+  btn.addEventListener('click', ()=>navigate(btn.dataset.view));
+});
+
+$('sidebarToggle').addEventListener('click', ()=>{
+  if (window.innerWidth <= 900){
+    $('sidebar').classList.toggle('mobile-open');
+    $('overlay').classList.toggle('show');
+  } else {
+    $('sidebar').classList.toggle('collapsed');
+    $('main').classList.toggle('collapsed');
+  }
+});
+$('overlay').addEventListener('click', ()=>{
+  $('sidebar').classList.remove('mobile-open');
+  $('overlay').classList.remove('show');
+});
+
+$('logoutBtn').addEventListener('click', async ()=>{
+  await signOut(auth);
+  window.location.href = 'login.html'; // Internship office uses standard login
+});
+
+// RENDER: STUDENTS
+function renderStudents(){
+  const term = ($('studentSearch').value || '').toLowerCase().trim();
+  
+  // Group by student email
+  const studentsMap = {};
+  State.internships.forEach(i => {
+    if (!studentsMap[i.studentEmail]) {
+      studentsMap[i.studentEmail] = {
+        name: i.studentName,
+        email: i.studentEmail,
+        docs: []
+      };
+    }
+    studentsMap[i.studentEmail].docs.push(i);
+  });
+  
+  let rows = Object.values(studentsMap);
+  
+  if (term) {
+    rows = rows.filter(s => 
+      s.name.toLowerCase().includes(term) || 
+      s.email.toLowerCase().includes(term)
+    );
+  }
+  
+  if (!rows.length){
+    $('studentsTableWrap').innerHTML = emptyHTML('No student documents found.','fa-folder-open');
+    return;
+  }
+  
+  $('studentsTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Student Name</th><th>Email</th><th>Uploaded Documents</th></tr></thead>
+    <tbody>${rows.map(s => `
+      <tr>
+        <td><strong>${esc(s.name)}</strong></td>
+        <td class="muted">${esc(s.email)}</td>
+        <td>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${s.docs.map(d => `
+              <div style="display:flex;align-items:center;justify-content:space-between;background:var(--background);padding:6px 12px;border-radius:6px;font-size:12px">
+                <span><i class="fa-solid fa-file-pdf" style="color:var(--danger);margin-right:6px"></i> <strong>${esc(d.docType)}</strong> (${fmtDate(d.createdAt)})</span>
+                <button class="btn btn-sm btn-primary" onclick="App.viewDoc('${d.id}')"><i class="fa-solid fa-eye"></i> View</button>
+              </div>
+            `).join('')}
+          </div>
+        </td>
+      </tr>
+    `).join('')}</tbody></table></div>`;
+}
+
+$('studentSearch').addEventListener('input', renderStudents);
+
+// ACTION: View Document from Base64
+async function viewDoc(docId){
+  try {
+    const docSnap = await getDoc(doc(db, 'osas_internships', docId));
+    if (!docSnap.exists()) { toast('Document not found.','error'); return; }
+    
+    const data = docSnap.data();
+    if (!data.fileData) { toast('File data is missing.','error'); return; }
+
+    const byteCharacters = atob(data.fileData);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {type: data.fileMime || 'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  } catch (e) {
+    console.error('Error opening PDF:', e);
+    toast('Could not open PDF: ' + e.message, 'error');
+  }
+}
+
+// RENDER: ANNOUNCEMENTS
+function renderAnnouncements(){
+  if (!State.announcements.length){ $('annList').innerHTML = emptyHTML('No announcements yet.','fa-bullhorn'); return; }
+  $('annList').innerHTML = State.announcements.map(a=>`
+    <div class="feed-card">
+      <div class="meta">
+        <span><i class="fa-regular fa-clock"></i> ${fmtDate(a.createdAt)}</span>
+        <span><i class="fa-regular fa-user"></i> ${esc(a.author||'OSAS')}</span>
+      </div>
+      <h3>${esc(a.title)}</h3>
+      <p>${esc(a.content)}</p>
+    </div>`).join('');
+}
+
+// RENDER: ACTIVITIES
+function renderActivities(){
+  const term = ($('actSearch').value||'').toLowerCase();
+  const rows = State.activities.filter(a=>{
+    if (!term) return true;
+    return ((a.title||'')+' '+(a.organizer||'')+' '+(a.venue||'')).toLowerCase().includes(term);
+  });
+  
+  if (!rows.length){ $('actList').innerHTML = emptyHTML('No activities found.','fa-calendar-days'); return; }
+  
+  $('actList').innerHTML = rows.map(a=>`
+    <div class="feed-card">
+      <div class="meta">
+        <span><i class="fa-regular fa-calendar"></i> ${fmtDate(a.startDate)} ${a.endDate ? ' - '+fmtDate(a.endDate) : ''}</span>
+        <span><i class="fa-solid fa-location-dot"></i> ${esc(a.venue||'TBA')}</span>
+        ${badge(a.status)}
+      </div>
+      <h3>${esc(a.title)}</h3>
+      <p style="margin-bottom:10px">${esc(a.description||'')}</p>
+      <div style="font-size:12px;color:var(--text-secondary)">
+        <strong>Organizer:</strong> ${esc(a.organizer||'-')} | <strong>Category:</strong> ${esc(a.category||'-')}
+      </div>
+    </div>`).join('');
+}
+
+$('actSearch').addEventListener('input', renderActivities);
+
+// RENDER: COMPANIES
+function renderCompanies(){
+  const term = ($('companySearch').value||'').toLowerCase();
+  const rows = State.companies.filter(c => {
+    if (!term) return true;
+    return ((c.name||'') + ' ' + (c.location||'') + ' ' + (c.courses||'')).toLowerCase().includes(term);
+  });
+
+  if (!rows.length) {
+    $('companiesTableWrap').innerHTML = emptyHTML('No partner companies found.', 'fa-building');
+    return;
+  }
+
+  $('companiesTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Company Name</th><th>Location</th><th>Courses Looking For</th><th>Notes</th><th>Date Added</th><th>Actions</th></tr></thead>
+    <tbody>${rows.map(c => `
+      <tr>
+        <td><strong>${esc(c.name)}</strong></td>
+        <td>${esc(c.location || '-')}</td>
+        <td style="white-space:pre-wrap; max-width:300px">${esc(c.courses)}</td>
+        <td class="muted" style="max-width:200px;white-space:pre-wrap">${esc(c.notes || '-')}</td>
+        <td class="muted">${fmtDate(c.createdAt)}</td>
+        <td><button class="btn btn-sm btn-outline" onclick="App.deleteCompany('${c.id}')"><i class="fa-solid fa-trash"></i></button></td>
+      </tr>
+    `).join('')}</tbody></table></div>`;
+}
+
+$('companySearch').addEventListener('input', renderCompanies);
+
+async function createCompany(){
+  const name = $('comp_name').value.trim();
+  const location = $('comp_location').value.trim();
+  const courses = $('comp_courses').value.trim();
+  const notes = $('comp_notes').value.trim();
+  const alertEl = $('companyAlert');
+
+  if (!name || !courses) {
+    alertEl.className = 'alert show error';
+    alertEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i><span>Company Name and Courses Looking For are required.</span>';
+    return;
+  }
+  alertEl.className = 'alert';
+
+  try {
+    await addDoc(collection(db, 'osas_partner_companies'), {
+      name,
+      location,
+      courses,
+      notes,
+      createdAt: serverTimestamp(),
+      createdBy: State.admin.uid
+    });
+    toast('Partner company added successfully.', 'success');
+    $('comp_name').value = '';
+    $('comp_location').value = '';
+    $('comp_courses').value = '';
+    $('comp_notes').value = '';
+    await loadCompanies();
+  } catch(e) {
+    console.error(e);
+    alertEl.className = 'alert show error';
+    alertEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i><span>Save failed: ${esc(e.message)}</span>`;
+  }
+}
+
+async function deleteCompany(id) {
+  const alertEl = $('companyAlert');
+  alertEl.className = 'alert show warning';
+  alertEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>
+    <span>Delete this company? 
+      <button class="btn btn-sm btn-danger" style="margin-left:8px" id="confirmDel">Confirm</button>
+      <button class="btn btn-sm btn-outline" style="margin-left:4px" id="cancelDel">Cancel</button>
+    </span>`;
+  
+  $('cancelDel').onclick = ()=>{ alertEl.className='alert'; alertEl.textContent=''; };
+  $('confirmDel').onclick = async ()=>{
+    try {
+      await deleteDoc(doc(db, 'osas_partner_companies', id));
+      alertEl.className = 'alert show success';
+      alertEl.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>Company deleted.</span>`;
+      await loadCompanies();
+    } catch(e) {
+      alertEl.className = 'alert show error';
+      alertEl.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i><span>Delete failed: ${esc(e.message)}</span>`;
+    }
+  };
+}
+
+// PUBLIC API
+window.App = {
+  refreshAll: async ()=>{
+    toast('Refreshing data...','info');
+    await Promise.all([loadInternships(), loadAnnouncements(), loadActivities(), loadCompanies()]);
+    navigate(State.currentView);
+    toast('Data refreshed.','success');
+  },
+  viewDoc,
+  createCompany,
+  deleteCompany
+};
+
+// AUTH GUARD
+onAuthStateChanged(auth, async (user)=>{
+  if (!user){
+    window.location.href = 'login.html';
+    return;
+  }
+  try {
+    const snap = await getDoc(doc(db, 'admins', user.uid));
+    if (!snap.exists() || snap.data().active !== true){
+      await signOut(auth);
+      window.location.href = 'login.html';
+      return;
+    }
+    
+    State.admin = { uid: user.uid, email: user.email };
+    $('userEmail').textContent = user.email;
+    $('userAvatar').textContent = (user.email||'I')[0].toUpperCase();
+    $('authGuard').style.display = 'none';
+
+    // Load all required data
+    await Promise.all([loadInternships(), loadAnnouncements(), loadActivities(), loadCompanies()]);
+    navigate('students');
+  } catch(e){
+    console.error('Auth guard error:', e);
+    $('authGuard').innerHTML = `<div class="alert error show"><i class="fa-solid fa-circle-exclamation"></i><span>Unable to load internship portal: ${esc(e.message)}</span></div>`;
+  }
+});
+</script>
+</body>
+</html>

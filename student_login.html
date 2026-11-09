@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Login | OSAS Management System</title>
+<link rel="icon" type="image/jpeg" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --primary:#ffffff;--secondary:#38bdf8;--secondary-dark:#0284c7;
+  --background:#f8fafc;--text-primary:#1e293b;--text-secondary:#64748b;
+  --border:#e2e8f0;--success:#16a34a;--danger:#dc2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--text-primary);background:var(--background);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+a{text-decoration:none;color:inherit}
+
+.login-wrap{width:100%;max-width:980px;display:grid;grid-template-columns:1fr 1fr;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px -30px rgba(2,132,199,.3);border:1px solid var(--border)}
+
+.brand-side{background:linear-gradient(160deg,#e0f2fe 0%,#f0f9ff 60%,#ffffff 100%);padding:56px 44px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.brand-side::before{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:rgba(56,189,248,.12);top:-100px;right:-100px}
+.brand-side .top{position:relative;z-index:1}
+.brand-side img.logo{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 8px 24px -8px rgba(2,132,199,.4);margin-bottom:24px}
+.brand-side h1{font-size:26px;font-weight:800;line-height:1.25;margin-bottom:12px;letter-spacing:-.5px}
+.brand-side p{font-size:14px;color:var(--text-secondary);max-width:320px}
+.brand-side .bottom{position:relative;z-index:1;font-size:12px;color:var(--text-secondary)}
+.brand-side .bottom strong{color:var(--text-primary);display:block;margin-bottom:2px}
+
+.form-side{padding:56px 44px;display:flex;flex-direction:column;justify-content:center}
+.form-side h2{font-size:24px;font-weight:800;margin-bottom:6px;letter-spacing:-.3px}
+.form-side .subtitle{font-size:14px;color:var(--text-secondary);margin-bottom:28px}
+
+.field{margin-bottom:18px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:7px}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-wrap i.left-icon{position:absolute;left:14px;color:var(--text-secondary);font-size:14px;pointer-events:none}
+.input-wrap input{width:100%;padding:12px 14px 12px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text-primary);background:#fff;transition:.2s;outline:none}
+.input-wrap input:focus{border-color:var(--secondary);box-shadow:0 0 0 3px rgba(56,189,248,.15)}
+.input-wrap .toggle-pass{position:absolute;right:12px;background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:4px;font-size:14px}
+
+.btn-submit{width:100%;padding:13px;border-radius:10px;background:var(--secondary);color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:.2s}
+.btn-submit:hover:not(:disabled){background:var(--secondary-dark)}
+.btn-submit:disabled{opacity:.7;cursor:not-allowed}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.msg{padding:11px 14px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:16px;display:none;align-items:flex-start;gap:10px;line-height:1.4}
+.msg.show{display:flex}
+.msg.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.msg.success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+
+.form-footer{margin-top:24px;text-align:center;font-size:13px;color:var(--text-secondary)}
+.form-footer a{color:var(--secondary-dark);font-weight:600}
+
+/* Hide signup by default */
+#signupForm { display: none; }
+
+@media(max-width:860px){
+  .login-wrap{grid-template-columns:1fr;max-width:460px}
+  .brand-side{display:none}
+  .form-side{padding:40px 28px}
+}
+</style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="brand-side">
+    <div class="top">
+      <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU Logo" class="logo">
+      <h1>Student Portal</h1>
+      <p>Access your student dashboard to submit concerns and upload internship documents.</p>
+    </div>
+    <div class="bottom">
+      <strong>Samar State University</strong>
+      Office of Student Affairs and Services
+    </div>
+  </div>
+
+  <div class="form-side">
+    <h2 id="formTitle">Student Login</h2>
+    <p class="subtitle" id="formSubtitle">Sign in to your student account.</p>
+
+    <div class="msg" id="msgBox"><i class="fa-solid fa-circle-exclamation"></i><span id="msgText"></span></div>
+
+    <!-- LOGIN FORM -->
+    <form id="loginForm" novalidate>
+      <div class="field">
+        <label for="email">Email Address</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-envelope left-icon"></i>
+          <input type="email" id="email" placeholder="student@ssu.edu.ph" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock left-icon"></i>
+          <input type="password" id="password" placeholder="Enter your password" required>
+          <button type="button" class="toggle-pass" id="togglePass"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="loginBtn">
+        <span id="loginBtnText"><i class="fa-solid fa-right-to-bracket"></i> Sign In</span>
+      </button>
+    </form>
+
+    <!-- SIGNUP FORM -->
+    <form id="signupForm" novalidate>
+      <div class="field">
+        <label for="suName">Full Name</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-user left-icon"></i>
+          <input type="text" id="suName" placeholder="Juan Dela Cruz" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="suEmail">Email Address</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-envelope left-icon"></i>
+          <input type="email" id="suEmail" placeholder="student@ssu.edu.ph" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="suPass">Password</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock left-icon"></i>
+          <input type="password" id="suPass" placeholder="Minimum 6 characters" required>
+        </div>
+      </div>
+      <button type="submit" class="btn-submit" id="signupBtn">
+        <span id="signupBtnText"><i class="fa-solid fa-user-plus"></i> Create Account</span>
+      </button>
+      <div class="form-footer">
+        <button type="button" class="link-btn" id="backToLogin" style="background:none;border:none;color:var(--secondary-dark);font-weight:600;cursor:pointer"><i class="fa-solid fa-arrow-left"></i> Back to Login</button>
+      </div>
+    </form>
+
+    <div class="form-footer" id="signupLinkWrap">
+      Need an account? <a href="#" id="showSignup">Register here</a>
+    </div>
+    <div class="form-footer">
+      <a href="index.html"><i class="fa-solid fa-house"></i> Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signOut, onAuthStateChanged, browserLocalPersistence, setPersistence
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAo5TKy65vg27n9Dkuh_PDnNT2byHndEY0",
+    authDomain: "forms-a9b1c.firebaseapp.com",
+    projectId: "forms-a9b1c",
+    storageBucket: "forms-a9b1c.firebasestorage.app",
+    messagingSenderId: "1076879732619",
+    appId: "1:1076879732619:web:89ba4135332ac30805898e",
+    measurementId: "G-88TF54KBKR"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const $ = id => document.getElementById(id);
+const msgBox = $('msgBox'), msgText = $('msgText');
+
+function showMsg(type, text) {
+  msgBox.className = 'msg show ' + type;
+  msgBox.querySelector('i').className = type === 'error' ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-circle-check';
+  msgText.textContent = text;
+}
+function clearMsg(){ msgBox.className = 'msg'; }
+
+function setLoading(btnId, textId, loading, originalHTML){
+  const btn = $(btnId), txt = $(textId);
+  btn.disabled = loading;
+  txt.innerHTML = loading ? '<span class="spinner"></span> Please wait...' : originalHTML;
+}
+
+function validateEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+
+$('togglePass').addEventListener('click', () => {
+  const p = $('password');
+  const isPass = p.type === 'password';
+  p.type = isPass ? 'text' : 'password';
+  $('togglePass').innerHTML = isPass ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+});
+
+// LOGIN
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMsg();
+  const email = $('email').value.trim();
+  const password = $('password').value;
+
+  if (!validateEmail(email) || !password) {
+    showMsg('error', 'Please enter a valid email and password.');
+    return;
+  }
+
+  setLoading('loginBtn','loginBtnText', true);
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+    await signInWithEmailAndPassword(auth, email, password);
+    showMsg('success', 'Login successful. Redirecting...');
+    setTimeout(() => { window.location.href = 'student.html'; }, 700);
+  } catch (err) {
+    console.error(err);
+    let m = 'Login failed. Check your credentials.';
+    if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') m = 'Invalid email or password.';
+    if (err.code === 'auth/too-many-requests') m = 'Too many attempts. Try again later.';
+    showMsg('error', m);
+  }
+  setLoading('loginBtn','loginBtnText', false, '<i class="fa-solid fa-right-to-bracket"></i> Sign In');
+});
+
+// SHOW SIGNUP
+$('showSignup').addEventListener('click', (e) => {
+  e.preventDefault();
+  clearMsg();
+  $('loginForm').style.display = 'none';
+  $('signupLinkWrap').style.display = 'none';
+  $('signupForm').style.display = 'block';
+  $('formTitle').textContent = 'Create Student Account';
+  $('formSubtitle').textContent = 'Register to access the student portal.';
+});
+
+$('backToLogin').addEventListener('click', () => {
+  clearMsg();
+  $('signupForm').style.display = 'none';
+  $('loginForm').style.display = 'block';
+  $('signupLinkWrap').style.display = 'block';
+  $('formTitle').textContent = 'Student Login';
+  $('formSubtitle').textContent = 'Sign in to your student account.';
+});
+
+// SIGNUP
+$('signupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMsg();
+  const name = $('suName').value.trim();
+  const email = $('suEmail').value.trim();
+  const pass = $('suPass').value;
+
+  if (!name || !validateEmail(email) || pass.length < 6) {
+    showMsg('error', 'Please fill all fields. Password must be at least 6 characters.');
+    return;
+  }
+
+  setLoading('signupBtn','signupBtnText', true);
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    // Store student profile in Firestore
+    await setDoc(doc(db, 'students', cred.user.uid), {
+      name: name,
+      email: email,
+      createdAt: serverTimestamp()
+    });
+    showMsg('success', 'Account created successfully. Redirecting...');
+    setTimeout(() => { window.location.href = 'student.html'; }, 1000);
+  } catch (err) {
+    console.error(err);
+    let m = 'Registration failed.';
+    if (err.code === 'auth/email-already-in-use') m = 'Email is already registered.';
+    if (err.code === 'auth/weak-password') m = 'Password is too weak.';
+    showMsg('error', m);
+    setLoading('signupBtn','signupBtnText', false, '<i class="fa-solid fa-user-plus"></i> Create Account');
+  }
+});
+
+// Redirect if already logged in
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    window.location.href = 'student.html';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrator Login | OSAS Management System</title>
+<link rel="icon" type="image/jpeg" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --primary:#ffffff;--secondary:#38bdf8;--secondary-dark:#0284c7;
+  --background:#f8fafc;--text-primary:#1e293b;--text-secondary:#64748b;
+  --border:#e2e8f0;--success:#16a34a;--warning:#f59e0b;--danger:#dc2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--text-primary);background:var(--background);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+a{text-decoration:none;color:inherit}
+
+/* Layout */
+.login-wrap{width:100%;max-width:980px;display:grid;grid-template-columns:1fr 1fr;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px -30px rgba(2,132,199,.3);border:1px solid var(--border)}
+
+/* Left / Brand side */
+.brand-side{background:linear-gradient(160deg,#e0f2fe 0%,#f0f9ff 60%,#ffffff 100%);padding:56px 44px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.brand-side::before{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:rgba(56,189,248,.12);top:-100px;right:-100px}
+.brand-side::after{content:"";position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(56,189,248,.08);bottom:-80px;left:-60px}
+.brand-side .top{position:relative;z-index:1}
+.brand-side img.logo{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 8px 24px -8px rgba(2,132,199,.4);margin-bottom:24px}
+.brand-side h1{font-size:26px;font-weight:800;line-height:1.25;margin-bottom:12px;letter-spacing:-.5px}
+.brand-side h1 span{color:var(--secondary-dark)}
+.brand-side p{font-size:14px;color:var(--text-secondary);max-width:320px}
+.brand-side .bottom{position:relative;z-index:1;font-size:12px;color:var(--text-secondary)}
+.brand-side .bottom strong{color:var(--text-primary);display:block;margin-bottom:2px}
+.features-mini{margin-top:32px;display:flex;flex-direction:column;gap:12px}
+.features-mini div{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-primary);font-weight:500}
+.features-mini i{width:28px;height:28px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--secondary-dark);font-size:12px;box-shadow:0 2px 6px rgba(2,132,199,.15)}
+
+/* Right / Form side */
+.form-side{padding:56px 44px;display:flex;flex-direction:column;justify-content:center}
+.form-side h2{font-size:24px;font-weight:800;margin-bottom:6px;letter-spacing:-.3px}
+.form-side .subtitle{font-size:14px;color:var(--text-secondary);margin-bottom:28px}
+
+.field{margin-bottom:18px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:7px}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-wrap i.left-icon{position:absolute;left:14px;color:var(--text-secondary);font-size:14px;pointer-events:none}
+.input-wrap input{width:100%;padding:12px 14px 12px 40px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text-primary);background:#fff;transition:.2s;outline:none}
+.input-wrap input:focus{border-color:var(--secondary);box-shadow:0 0 0 3px rgba(56,189,248,.15)}
+.input-wrap input.error{border-color:var(--danger)}
+.input-wrap .toggle-pass{position:absolute;right:12px;background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:4px;font-size:14px}
+.input-wrap .toggle-pass:hover{color:var(--secondary-dark)}
+
+.row-between{display:flex;align-items:center;justify-content:space-between;margin:6px 0 22px;flex-wrap:wrap;gap:8px}
+.checkbox{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);cursor:pointer;user-select:none}
+.checkbox input{width:16px;height:16px;accent-color:var(--secondary-dark);cursor:pointer}
+.link-btn{background:none;border:none;color:var(--secondary-dark);font-size:13px;font-weight:600;cursor:pointer;padding:0;font-family:inherit}
+.link-btn:hover{text-decoration:underline}
+
+.btn-submit{width:100%;padding:13px;border-radius:10px;background:var(--secondary);color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:.2s}
+.btn-submit:hover:not(:disabled){background:var(--secondary-dark)}
+.btn-submit:disabled{opacity:.7;cursor:not-allowed}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Inline messages */
+.msg{padding:11px 14px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:16px;display:none;align-items:flex-start;gap:10px;line-height:1.4}
+.msg.show{display:flex}
+.msg i{margin-top:2px}
+.msg.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.msg.success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.msg.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+
+.form-footer{margin-top:24px;text-align:center;font-size:13px;color:var(--text-secondary)}
+.form-footer a{color:var(--secondary-dark);font-weight:600}
+
+/* Signup (hidden when disabled) */
+#signupSection{display:none}
+.field-error{color:var(--danger);font-size:12px;margin-top:5px;display:none}
+.field-error.show{display:block}
+
+@media(max-width:860px){
+  .login-wrap{grid-template-columns:1fr;max-width:460px}
+  .brand-side{display:none}
+  .form-side{padding:40px 28px}
+}
+</style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <!-- Brand side -->
+  <div class="brand-side">
+    <div class="top">
+      <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU Logo" class="logo">
+      <h1>OSAS <span>Office Management</span> System</h1>
+      <p>Secure portal access for OSAS Administrators, SWDS Staff, and Internship Coordinators.</p>
+      <div class="features-mini">
+        <div><i class="fa-solid fa-user-shield"></i> Role-Based Access Control</div>
+        <div><i class="fa-solid fa-database"></i> Centralized Student Records</div>
+        <div><i class="fa-solid fa-lock"></i> Encrypted Authentication</div>
+      </div>
+    </div>
+    <div class="bottom">
+      <strong>Samar State University</strong>
+      Office of Student Affairs and Services
+    </div>
+  </div>
+
+  <!-- Form side -->
+  <div class="form-side">
+    <h2 id="formTitle">Portal Login</h2>
+    <p class="subtitle" id="formSubtitle">Sign in with your authorized account.</p>
+
+    <div class="msg" id="msgBox"><i class="fa-solid fa-circle-exclamation"></i><span id="msgText"></span></div>
+
+    <!-- LOGIN FORM -->
+    <form id="loginForm" autocomplete="on" novalidate>
+      <div class="field">
+        <label for="email">Email Address</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-envelope left-icon"></i>
+          <input type="email" id="email" name="email" placeholder="admin@ssu.edu.ph" autocomplete="username" required>
+        </div>
+        <div class="field-error" id="emailErr">Please enter a valid email address.</div>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-lock left-icon"></i>
+          <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+          <button type="button" class="toggle-pass" id="togglePass" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>
+        </div>
+        <div class="field-error" id="passErr">Password is required.</div>
+      </div>
+
+      <div class="row-between">
+        <label class="checkbox"><input type="checkbox" id="rememberMe"> Remember Me</label>
+        <button type="button" class="link-btn" id="forgotBtn">Forgot Password?</button>
+      </div>
+
+      <button type="submit" class="btn-submit" id="loginBtn">
+        <span id="loginBtnText"><i class="fa-solid fa-right-to-bracket"></i> Sign In</span>
+      </button>
+    </form>
+
+    <!-- FORGOT PASSWORD FORM -->
+    <form id="forgotForm" style="display:none" novalidate>
+      <div class="field">
+        <label for="resetEmail">Registered Email Address</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-envelope left-icon"></i>
+          <input type="email" id="resetEmail" placeholder="admin@ssu.edu.ph" required>
+        </div>
+        <div class="field-error" id="resetErr">Please enter a valid email address.</div>
+      </div>
+      <button type="submit" class="btn-submit" id="resetBtn">
+        <span id="resetBtnText"><i class="fa-solid fa-paper-plane"></i> Send Reset Link</span>
+      </button>
+      <div class="form-footer">
+        <button type="button" class="link-btn" id="backToLogin"><i class="fa-solid fa-arrow-left"></i> Back to Login</button>
+      </div>
+    </form>
+
+    <div class="form-footer">
+      <a href="index.html"><i class="fa-solid fa-house"></i> Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, sendPasswordResetEmail,
+  signOut, setPersistence, browserLocalPersistence, browserSessionPersistence, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ============================================================
+// FIREBASE CONFIG
+// ============================================================
+const firebaseConfig = {
+    apiKey: "AIzaSyAo5TKy65vg27n9Dkuh_PDnNT2byHndEY0",
+    authDomain: "forms-a9b1c.firebaseapp.com",
+    projectId: "forms-a9b1c",
+    storageBucket: "forms-a9b1c.firebasestorage.app",
+    messagingSenderId: "1076879732619",
+    appId: "1:1076879732619:web:89ba4135332ac30805898e",
+    measurementId: "G-88TF54KBKR"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+const $ = (id) => document.getElementById(id);
+const msgBox = $('msgBox'), msgText = $('msgText');
+
+function showMsg(type, text) {
+  msgBox.className = 'msg show ' + type;
+  msgBox.querySelector('i').className =
+    type === 'error' ? 'fa-solid fa-circle-exclamation'
+    : type === 'success' ? 'fa-solid fa-circle-check'
+    : 'fa-solid fa-circle-info';
+  msgText.textContent = text;
+}
+function clearMsg(){ msgBox.className = 'msg'; }
+
+function setLoading(btnId, textId, loading, originalHTML){
+  const btn = $(btnId), txt = $(textId);
+  btn.disabled = loading;
+  txt.innerHTML = loading ? '<span class="spinner"></span> Please wait...' : originalHTML;
+}
+
+function validateEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+
+// Password toggle
+$('togglePass').addEventListener('click', () => {
+  const p = $('password');
+  const isPass = p.type === 'password';
+  p.type = isPass ? 'text' : 'password';
+  $('togglePass').innerHTML = isPass ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+});
+
+// ============================================================
+// ROLE ROUTING LOGIC
+// ============================================================
+async function redirectByRole(uid, email) {
+  try {
+    const snap = await getDoc(doc(db, 'admins', uid));
+    if (!snap.exists()) {
+      return { ok:false, reason:'No administrator record found.' };
+    }
+    
+    const data = snap.data();
+    
+    if (data.active !== true) {
+      return { ok:false, reason:'This account is inactive.' };
+    }
+    
+    if (data.email && data.email.toLowerCase() !== (email||'').toLowerCase()) {
+      return { ok:false, reason:'Email mismatch. Contact system administrator.' };
+    }
+
+    // Determine redirect path based on role
+    const role = (data.role || 'admin').toLowerCase();
+    
+    if (role === 'swds') {
+      return { ok:true, path: 'swds.html' };
+    } else if (role === 'internship') {
+      return { ok:true, path: 'internship.html' };
+    } else {
+      // Default to main admin dashboard
+      return { ok:true, path: 'dashboard.html' };
+    }
+    
+  } catch (e) {
+    console.error('Role check error:', e);
+    return { ok:false, reason:'Unable to verify authorization.' };
+  }
+}
+
+// ============================================================
+// LOGIN
+// ============================================================
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMsg();
+  const email = $('email').value.trim();
+  const password = $('password').value;
+  const remember = $('rememberMe').checked;
+
+  $('emailErr').classList.remove('show');
+  $('passErr').classList.remove('show');
+  $('email').classList.remove('error');
+  $('password').classList.remove('error');
+
+  let bad = false;
+  if (!validateEmail(email)) { $('emailErr').classList.add('show'); $('email').classList.add('error'); bad = true; }
+  if (!password) { $('passErr').classList.add('show'); $('password').classList.add('error'); bad = true; }
+  if (bad) return;
+
+  setLoading('loginBtn','loginBtnText', true);
+  try {
+    await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    
+    const check = await redirectByRole(cred.user.uid, cred.user.email);
+    
+    if (!check.ok) {
+      await signOut(auth);
+      showMsg('error', check.reason);
+      setLoading('loginBtn','loginBtnText', false, '<i class="fa-solid fa-right-to-bracket"></i> Sign In');
+      return;
+    }
+    
+    showMsg('success', 'Login successful. Redirecting...');
+    setTimeout(() => { window.location.href = check.path; }, 700);
+    
+  } catch (err) {
+    console.error(err);
+    let m = 'Login failed. Please try again.';
+    switch (err.code) {
+      case 'auth/invalid-credential':
+      case 'auth/wrong-password':
+      case 'auth/user-not-found': m = 'Invalid email or password.'; break;
+      case 'auth/too-many-requests': m = 'Too many attempts. Please wait.'; break;
+      case 'auth/invalid-email': m = 'Invalid email format.'; break;
+      case 'auth/network-request-failed': m = 'Network error.'; break;
+      case 'auth/user-disabled': m = 'Account disabled.'; break;
+    }
+    showMsg('error', m);
+    setLoading('loginBtn','loginBtnText', false, '<i class="fa-solid fa-right-to-bracket"></i> Sign In');
+  }
+});
+
+// ============================================================
+// FORGOT PASSWORD
+// ============================================================
+$('forgotBtn').addEventListener('click', () => {
+  clearMsg();
+  $('loginForm').style.display = 'none';
+  $('forgotForm').style.display = 'block';
+  $('formTitle').textContent = 'Reset Password';
+  $('formSubtitle').textContent = 'Enter your registered email to receive a reset link.';
+  $('resetEmail').value = $('email').value.trim();
+  $('resetEmail').focus();
+});
+$('backToLogin').addEventListener('click', () => {
+  clearMsg();
+  $('forgotForm').style.display = 'none';
+  $('loginForm').style.display = 'block';
+  $('formTitle').textContent = 'Portal Login';
+  $('formSubtitle').textContent = 'Sign in with your authorized account.';
+});
+
+$('forgotForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMsg();
+  const email = $('resetEmail').value.trim();
+  $('resetErr').classList.remove('show');
+  if (!validateEmail(email)) { $('resetErr').classList.add('show'); return; }
+  setLoading('resetBtn','resetBtnText', true);
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showMsg('success', 'Password reset email sent. Check your inbox.');
+  } catch (err) {
+    console.error(err);
+    let m = 'Unable to send reset email.';
+    if (err.code === 'auth/user-not-found') m = 'No account found with that email.';
+    showMsg('error', m);
+  }
+  setLoading('resetBtn','resetBtnText', false, '<i class="fa-solid fa-paper-plane"></i> Send Reset Link');
+});
+
+// ============================================================
+// AUTH STATE — Auto-redirect logged-in users
+// ============================================================
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return;
+  
+  const check = await redirectByRole(user.uid, user.email);
+  if (check.ok) {
+    window.location.href = check.path;
+  } else {
+    await signOut(auth);
+  }
+});
+</script>
+</body>
+</html>

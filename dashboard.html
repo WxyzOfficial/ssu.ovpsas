@@ -1,0 +1,2156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | OSAS Management System</title>
+<link rel="icon" type="image/jpeg" href="https://wxyzofficial.sirv.com/SSU/ssu.jpg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --primary:#ffffff;--secondary:#38bdf8;--secondary-dark:#0284c7;
+  --background:#f8fafc;--sidebar:#ffffff;--text-primary:#1e293b;
+  --text-secondary:#64748b;--border:#e2e8f0;--success:#16a34a;
+  --warning:#f59e0b;--danger:#dc2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--text-primary);background:var(--background);min-height:100vh}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit}
+
+/* ============ LAYOUT ============ */
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;transition:transform .25s, width .25s;overflow:hidden}
+.sidebar.collapsed{width:72px}
+.sidebar-head{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border);min-height:72px}
+.sidebar-head img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--secondary);flex-shrink:0}
+.sidebar-head .txt{overflow:hidden;white-space:nowrap}
+.sidebar-head .txt .n{font-weight:800;font-size:13px;line-height:1.2}
+.sidebar-head .txt .s{font-size:11px;color:var(--text-secondary)}
+.sidebar.collapsed .sidebar-head .txt{display:none}
+
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 8px}
+.nav-group{margin-bottom:6px}
+.nav-group-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-secondary);text-transform:uppercase;padding:10px 14px 6px;white-space:nowrap}
+.sidebar.collapsed .nav-group-label{text-align:center;font-size:9px;padding:8px 0 4px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:9px;font-size:13.5px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:.15s;white-space:nowrap;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.nav-item i{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-item span{overflow:hidden;text-overflow:ellipsis}
+.sidebar.collapsed .nav-item span{display:none}
+.sidebar.collapsed .nav-item{justify-content:center;padding:11px 0}
+.nav-item:hover{background:var(--background);color:var(--secondary-dark)}
+.nav-item.active{background:#e0f2fe;color:var(--secondary-dark);font-weight:600}
+.nav-item.active i{color:var(--secondary-dark)}
+.nav-item.danger{color:var(--danger)}
+.nav-item.danger:hover{background:#fef2f2;color:var(--danger)}
+
+.main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left .25s}
+.main.collapsed{margin-left:72px}
+
+/* Topbar */
+.topbar{height:64px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 24px;position:sticky;top:0;z-index:100}
+.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:#fff;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:.15s}
+.icon-btn:hover{background:var(--background);color:var(--secondary-dark)}
+.topbar-title{font-size:16px;font-weight:700;flex:1}
+.topbar-user{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-secondary)}
+.topbar-user .avatar{width:34px;height:34px;border-radius:50%;background:#e0f2fe;color:var(--secondary-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+
+/* Content */
+.content{padding:24px;flex:1;max-width:100%;overflow-x:hidden}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.page-head h1{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.page-head p{font-size:13px;color:var(--text-secondary);margin-top:3px}
+
+/* Cards */
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.card-head h3{font-size:15px;font-weight:700}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:22px}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;transition:.2s}
+.stat-card:hover{border-color:#bae6fd;box-shadow:0 8px 24px -16px rgba(2,132,199,.4)}
+.stat-icon{width:40px;height:40px;border-radius:10px;background:#e0f2fe;color:var(--secondary-dark);display:flex;align-items:center;justify-content:center;font-size:16px}
+.stat-val{font-size:24px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.stat-label{font-size:12px;color:var(--text-secondary);font-weight:500}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--secondary);color:#fff}
+.btn-primary:hover{background:var(--secondary-dark)}
+.btn-outline{background:#fff;color:var(--text-primary);border-color:var(--border)}
+.btn-outline:hover{border-color:var(--secondary);color:var(--secondary-dark)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#b91c1c}
+.btn-success{background:var(--success);color:#fff}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:7px}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+
+/* Forms */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;color:var(--text-primary)}
+.field input,.field select,.field textarea{padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text-primary);background:#fff;outline:none;transition:.15s;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--secondary);box-shadow:0 0 0 3px rgba(56,189,248,.13)}
+.field textarea{resize:vertical;min-height:70px}
+.field .err{color:var(--danger);font-size:11.5px;display:none}
+.field .err.show{display:block}
+
+/* Table */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}
+thead th{background:var(--background);text-align:left;padding:11px 14px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-secondary);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#fafcff}
+td .muted{color:var(--text-secondary);font-size:12px}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge.pending{background:#fef3c7;color:#92400e}
+.badge.approved{background:#dbeafe;color:#1e40af}
+.badge.completed{background:#dcfce7;color:#166534}
+.badge.cancelled{background:#fee2e2;color:#991b1b}
+.badge.rescheduled{background:#f3e8ff;color:#6b21a8}
+.badge.review{background:#e0e7ff;color:#3730a3}
+.badge.followup{background:#fef3c7;color:#92400e}
+.badge.resolved{background:#dcfce7;color:#166534}
+.badge.closed{background:#e5e7eb;color:#374151}
+.badge.inprogress{background:#dbeafe;color:#1e40af}
+.badge.received{background:#dbeafe;color:#1e40af}
+.badge.released{background:#dcfce7;color:#166534}
+.badge.signature{background:#fef9c3;color:#854d0e}
+.badge.overdue{background:#fee2e2;color:#991b1b}
+.badge.todo{background:#e5e7eb;color:#374151}
+.badge.active{background:#dcfce7;color:#166534}
+.badge.inactive{background:#fee2e2;color:#991b1b}
+
+/* Toolbar */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.search-box{position:relative;flex:1;min-width:200px;max-width:340px}
+.search-box i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:13px}
+.search-box input{width:100%;padding:9px 11px 9px 34px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;outline:none}
+.search-box input:focus{border-color:var(--secondary)}
+.toolbar select{padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;background:#fff;outline:none;cursor:pointer}
+
+/* Inline alerts */
+.alert{padding:11px 14px;border-radius:10px;font-size:13px;display:none;align-items:flex-start;gap:10px;margin-bottom:16px;line-height:1.4}
+.alert.show{display:flex}
+.alert.success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.alert.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.alert.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.alert.warning{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.alert i{margin-top:2px}
+
+/* Toast */
+#toastHost{position:fixed;top:78px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:340px}
+.toast{background:#fff;border-left:4px solid var(--secondary);border-radius:9px;padding:12px 15px;font-size:13px;box-shadow:0 10px 30px -10px rgba(0,0,0,.2);display:flex;gap:10px;align-items:flex-start;animation:slideIn .25s ease}
+.toast.success{border-left-color:var(--success)}
+.toast.error{border-left-color:var(--danger)}
+.toast.info{border-left-color:var(--secondary-dark)}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Empty & loading */
+.empty{padding:40px 20px;text-align:center;color:var(--text-secondary)}
+.empty i{font-size:38px;color:var(--border);margin-bottom:12px;display:block}
+.empty p{font-size:13px}
+.loading{padding:40px;text-align:center;color:var(--text-secondary)}
+.loading .spin{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--secondary);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Detail panel */
+.detail-panel{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:16px}
+.detail-panel h4{font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.kv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.kv{padding:9px 0}
+.kv .k{font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.kv .v{font-size:13.5px;font-weight:500;word-break:break-word}
+
+/* Pagination */
+.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;font-size:12.5px;color:var(--text-secondary);flex-wrap:wrap}
+.pager button{padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:12px;font-family:inherit}
+.pager button:hover:not(:disabled){border-color:var(--secondary);color:var(--secondary-dark)}
+.pager button:disabled{opacity:.4;cursor:not-allowed}
+
+/* Chart */
+.chart-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.chart-card canvas{max-height:280px}
+
+/* Views */
+.view{display:none}
+.view.active{display:block}
+.section-gap{display:flex;flex-direction:column;gap:16px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* inline confirm */
+.confirm-bar{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;font-size:13px}
+.confirm-bar .cf-text{color:#92400e;font-weight:500;display:flex;align-items:center;gap:8px}
+.confirm-bar .cf-actions{display:flex;gap:8px}
+
+/* Mobile sidebar */
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:150}
+.overlay.show{display:block}
+
+@media(max-width:900px){
+  .two-col{grid-template-columns:1fr}
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.mobile-open{transform:translateX(0)}
+  .main{margin-left:0!important}
+  .sidebar.collapsed{width:260px}
+  .sidebar.collapsed .nav-item span{display:inline}
+  .sidebar.collapsed .nav-item{justify-content:flex-start;padding:10px 14px}
+  .sidebar.collapsed .sidebar-head .txt{display:block}
+  .content{padding:16px}
+  .stats-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .stat-val{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <img src="https://wxyzofficial.sirv.com/SSU/ssu.jpg" alt="SSU">
+    <div class="txt">
+      <div class="n">OSAS System</div>
+      <div class="s">Samar State University</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <div class="nav-group">
+      <div class="nav-group-label">Dashboard</div>
+      <button class="nav-item active" data-view="overview"><i class="fa-solid fa-gauge-high"></i><span>Overview</span></button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Student Management</div>
+      <button class="nav-item" data-view="students"><i class="fa-solid fa-user-graduate"></i><span>Student Records</span></button>
+      <!-- <button class="nav-item" data-view="forms"><i class="fa-solid fa-file-lines"></i><span>Forms & Submissions</span></button> -->
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Office Management</div>
+      <button class="nav-item" data-view="appointments"><i class="fa-solid fa-calendar-check"></i><span>Appointments</span></button>
+      <button class="nav-item" data-view="documents"><i class="fa-solid fa-folder-tree"></i><span>Document Tracking</span></button>
+      <button class="nav-item" data-view="tasks"><i class="fa-solid fa-list-check"></i><span>Tasks</span></button>
+      <button class="nav-item" data-view="announcements"><i class="fa-solid fa-bullhorn"></i><span>Announcements</span></button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Student Affairs</div>
+      <button class="nav-item" data-view="activities"><i class="fa-solid fa-calendar-days"></i><span>Activities & Events</span></button>
+      <button class="nav-item" data-view="organizations"><i class="fa-solid fa-users-rectangle"></i><span>Student Organizations</span></button>
+      <button class="nav-item" data-view="concerns"><i class="fa-solid fa-headset"></i><span>Student Concerns</span></button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Analytics</div>
+      <button class="nav-item" data-view="reports"><i class="fa-solid fa-chart-pie"></i><span>Reports</span></button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">System</div>
+      <button class="nav-item" data-view="logs"><i class="fa-solid fa-clipboard-list"></i><span>Activity Logs</span></button>
+      <button class="nav-item" data-view="admins"><i class="fa-solid fa-user-shield"></i><span>Administrator Mgmt</span></button>
+      <button class="nav-item" data-view="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
+      <button class="nav-item danger" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>
+    </div>
+  </nav>
+</aside>
+<div class="overlay" id="overlay"></div>
+
+<!-- Main -->
+<div class="main" id="main">
+  <header class="topbar">
+    <button class="icon-btn" id="sidebarToggle" aria-label="Toggle sidebar"><i class="fa-solid fa-bars"></i></button>
+    <div class="topbar-title" id="topbarTitle">Overview</div>
+    <div class="topbar-user">
+      <div class="avatar" id="userAvatar">A</div>
+      <span id="userEmail">loading...</span>
+    </div>
+  </header>
+
+  <main class="content" id="content">
+    <!-- Loading guard -->
+    <div id="authGuard" class="loading"><div class="spin"></div>Verifying administrator access...</div>
+
+    <!-- ============ OVERVIEW ============ -->
+    <section class="view" id="view-overview">
+      <div class="page-head">
+        <div><h1>Dashboard Overview</h1><p>Real-time summary of OSAS operations.</p></div>
+        <button class="btn btn-outline" onclick="App.refreshAll()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="two-col">
+        <div class="chart-card">
+          <div class="card-head"><h3>Student Submissions by Month</h3></div>
+          <canvas id="chartSubmissions"></canvas>
+          <div class="empty" id="chartSubmissionsEmpty" style="display:none"><i class="fa-solid fa-chart-line"></i><p>No response data yet.</p></div>
+        </div>
+        <div class="chart-card">
+          <div class="card-head"><h3>Responses per Form</h3></div>
+          <canvas id="chartForms"></canvas>
+          <div class="empty" id="chartFormsEmpty" style="display:none"><i class="fa-solid fa-chart-bar"></i><p>No forms yet.</p></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-head"><h3>Recent Student Submissions</h3></div>
+          <div id="recentSubmissions"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Recent Administrative Activity</h3></div>
+          <div id="recentActivity"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>Recently Created Forms</h3></div>
+        <div id="recentForms"></div>
+      </div>
+    </section>
+
+    <!-- ============ STUDENT RECORDS ============ -->
+    <section class="view" id="view-students">
+      <div class="page-head">
+        <div><h1>Student Records</h1><p>All student submissions across every OSAS form.</p></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline" onclick="App.exportStudentsCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
+          <button class="btn btn-outline" onclick="App.printStudents()"><i class="fa-solid fa-print"></i> Print</button>
+        </div>
+      </div>
+      <div id="studentsAlert" class="alert"></div>
+      <div class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="studentSearch" placeholder="Search name, student no., email, dept, course..."></div>
+        <select id="studentFormFilter"><option value="">All Forms</option></select>
+        <select id="studentDateFilter">
+          <option value="">All Dates</option>
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 90 days</option>
+          <option value="365">Last 365 days</option>
+        </select>
+        <select id="studentPageSize"><option value="10">10 / page</option><option value="25" selected>25 / page</option><option value="50">50 / page</option></select>
+      </div>
+      <div id="studentsTableWrap"></div>
+      <div id="studentsDetail"></div>
+    </section>
+
+    <!-- ============ FORMS ============ -->
+    <section class="view" id="view-forms">
+      <div class="page-head"><div><h1>Forms & Submissions</h1><p>Existing forms from the SSU Forms application.</p></div></div>
+      <div id="formsAlert" class="alert"></div>
+      <div id="formsList"></div>
+    </section>
+
+    <!-- ============ APPOINTMENTS ============ -->
+    <section class="view" id="view-appointments">
+      <div class="page-head"><div><h1>Appointments</h1><p>Manage student appointments.</p></div>
+        <button class="btn btn-primary" onclick="App.showForm('appointment')"><i class="fa-solid fa-plus"></i> New Appointment</button></div>
+      <div id="apptAlert" class="alert"></div>
+      <div id="apptFormHost"></div>
+      <div class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="apptSearch" placeholder="Search student name or purpose..."></div>
+        <select id="apptStatusFilter">
+          <option value="">All Status</option><option>Pending</option><option>Approved</option><option>Rescheduled</option><option>Completed</option><option>Cancelled</option>
+        </select>
+      </div>
+      <div id="apptTableWrap"></div>
+    </section>
+
+    <!-- ============ DOCUMENTS ============ -->
+    <section class="view" id="view-documents">
+      <div class="page-head"><div><h1>Document Tracking</h1><p>Incoming and outgoing office documents.</p></div>
+        <button class="btn btn-primary" onclick="App.showForm('document')"><i class="fa-solid fa-plus"></i> New Document</button></div>
+      <div id="docAlert" class="alert"></div>
+      <div id="docFormHost"></div>
+      <div class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="docSearch" placeholder="Search ref no., title, sender, recipient..."></div>
+        <select id="docStatusFilter">
+          <option value="">All Status</option><option>Received</option><option>Under Review</option><option>For Signature</option><option>Approved</option><option>Released</option><option>Completed</option>
+        </select>
+      </div>
+      <div id="docTableWrap"></div>
+    </section>
+
+    <!-- ============ TASKS ============ -->
+    <section class="view" id="view-tasks">
+      <div class="page-head"><div><h1>Task Management</h1><p>Office tasks and assignments.</p></div>
+        <button class="btn btn-primary" onclick="App.showForm('task')"><i class="fa-solid fa-plus"></i> New Task</button></div>
+      <div id="taskAlert" class="alert"></div>
+      <div id="taskFormHost"></div>
+      <div class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="taskSearch" placeholder="Search task or assignee..."></div>
+        <select id="taskStatusFilter"><option value="">All Status</option><option>To Do</option><option>In Progress</option><option>Completed</option><option>Overdue</option></select>
+        <select id="taskPriorityFilter"><option value="">All Priority</option><option>Low</option><option>Medium</option><option>High</option></select>
+      </div>
+      <div id="taskTableWrap"></div>
+    </section>
+
+    <!-- ============ ANNOUNCEMENTS ============ -->
+    <section class="view" id="view-announcements">
+      <div class="page-head"><div><h1>Announcements</h1><p>Internal OSAS announcements.</p></div>
+        <button class="btn btn-primary" onclick="App.showForm('announcement')"><i class="fa-solid fa-plus"></i> New Announcement</button></div>
+      <div id="annAlert" class="alert"></div>
+      <div id="annFormHost"></div>
+      <div id="annList"></div>
+    </section>
+
+    <!-- ============ ACTIVITIES ============ -->
+    <section class="view" id="view-activities">
+      <div class="page-head"><div><h1>Activities & Events</h1><p>Student activities and events.</p></div>
+        <button class="btn btn-primary" onclick="App.showForm('activity')"><i class="fa-solid fa-plus"></i> New Activity</button></div>
+      <div id="actAlert" class="alert"></div>
+      <div id="actFormHost"></div>
+      <div class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="actSearch" placeholder="Search title, organizer, venue..."></div>
+      </div>
+      <div id="actTableWrap"></div>
+    </section>
+
+    <!-- ============ ORGANIZATIONS ============ -->
+    <section class="view" id="view-organizations">
+      <div class="page-head"><div><h1>Student Organizations</h1><p>Recognized student organizations.</p></div>
+        <button class="btn btn-primary" onclick="App.showForm('organization')"><i class="fa-solid fa-plus"></i> New Organization</button></div>
+      <div id="orgAlert" class="alert"></div>
+      <div id="orgFormHost"></div>
+      <div class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="orgSearch" placeholder="Search organization or adviser..."></div>
+      </div>
+      <div id="orgTableWrap"></div>
+    </section>
+
+    <!-- ============ CONCERNS ============ -->
+    <section class="view" id="view-concerns">
+      <div class="page-head"><div><h1>Student Concerns</h1><p>Confidential student concern tracking.</p></div>
+        <button class="btn btn-primary" onclick="App.showForm('concern')"><i class="fa-solid fa-plus"></i> New Concern</button></div>
+      <div id="concernAlert" class="alert"></div>
+      <div id="concernFormHost"></div>
+      <div class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="concernSearch" placeholder="Search student or category..."></div>
+        <select id="concernStatusFilter"><option value="">All Status</option><option>Pending</option><option>In Progress</option><option>For Follow-up</option><option>Resolved</option><option>Closed</option></select>
+      </div>
+      <div id="concernTableWrap"></div>
+    </section>
+
+    <!-- ============ REPORTS ============ -->
+    <section class="view" id="view-reports">
+      <div class="page-head"><div><h1>Reports & Analytics</h1><p>Generate reports across all modules.</p></div></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="form-grid">
+          <div class="field"><label>From Date</label><input type="date" id="reportFrom"></div>
+          <div class="field"><label>To Date</label><input type="date" id="reportTo"></div>
+          <div class="field"><label>Module</label>
+            <select id="reportModule">
+              <option value="students">Student Submissions</option>
+              <option value="appointments">Appointments</option>
+              <option value="documents">Documents</option>
+              <option value="tasks">Tasks</option>
+              <option value="activities">Activities</option>
+              <option value="organizations">Organizations</option>
+              <option value="concerns">Concerns</option>
+            </select>
+          </div>
+          <div class="field" style="justify-content:flex-end"><label>&nbsp;</label>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary" onclick="App.runReport()"><i class="fa-solid fa-play"></i> Generate</button>
+              <button class="btn btn-outline" onclick="App.exportReportCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
+              <button class="btn btn-outline" onclick="App.printReport()"><i class="fa-solid fa-print"></i> Print</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3 id="reportTitle">Report</h3><span id="reportMeta" class="muted"></span></div>
+        <div id="reportBody"><div class="empty"><i class="fa-solid fa-chart-simple"></i><p>Select a module and click Generate.</p></div></div>
+      </div>
+    </section>
+
+    <!-- ============ LOGS ============ -->
+    <section class="view" id="view-logs">
+      <div class="page-head"><div><h1>Activity Logs</h1><p>Audit trail of administrative actions (read-only).</p></div>
+        <button class="btn btn-outline" onclick="App.loadLogs()"><i class="fa-solid fa-rotate"></i> Refresh</button></div>
+      <div id="logsAlert" class="alert"></div>
+      <div class="toolbar">
+        <div class="search-box"><i class="fa-solid fa-search"></i><input type="text" id="logSearch" placeholder="Search by action, module, or email..."></div>
+      </div>
+      <div id="logsTableWrap"></div>
+    </section>
+
+    <!-- ============ ADMINS ============ -->
+    <section class="view" id="view-admins">
+      <div class="page-head"><div><h1>Administrator Management</h1><p>View and manage administrator accounts (authorization only).</p></div>
+        <button class="btn btn-outline" onclick="App.loadAdmins()"><i class="fa-solid fa-rotate"></i> Refresh</button></div>
+      <div id="adminsAlert" class="alert"></div>
+      
+      <!-- CREATE NEW ACCOUNT -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-head"><h3>Create New Account (SWDS / Internship)</h3></div>
+        <p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px">Create accounts for SWDS or Internship roles. The account will be automatically authorized in the <strong>admins</strong> collection.</p>
+        <div class="form-grid">
+          <div class="field"><label>Email Address</label><input type="email" id="newAdminEmail" placeholder="staff@ssu.edu.ph"></div>
+          <div class="field"><label>Password</label><input type="password" id="newAdminPass" placeholder="Min 6 characters"></div>
+          <div class="field"><label>Role</label>
+            <select id="newAdminRole">
+              <option value="admin">Admin</option>
+              <option value="swds">SWDS</option>
+              <option value="internship">Internship</option>
+            </select>
+          </div>
+          <div class="field" style="justify-content:flex-end"><label>&nbsp;</label>
+            <button class="btn btn-success" onclick="App.createNewAccount()" id="createAccBtn"><i class="fa-solid fa-user-plus"></i> Create Account</button>
+          </div>
+        </div>
+        <div id="createAccAlert" class="alert error" style="margin-top:10px"></div>
+      </div>
+
+      <!-- UPSERT EXISTING -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-head"><h3>Activate / Deactivate Administrator</h3></div>
+        <p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px">Enter the UID of an existing Firebase Auth account. Toggle activation in the <strong>admins</strong> collection.</p>
+        <div class="form-grid">
+          <div class="field"><label>Admin UID</label><input type="text" id="adminUidInput" placeholder="Firebase Auth UID"></div>
+          <div class="field"><label>Email</label><input type="email" id="adminEmailInput" placeholder="admin@ssu.edu.ph"></div>
+          <div class="field"><label>Role</label>
+            <select id="adminRoleInput">
+              <option value="admin">Admin</option>
+              <option value="swds">SWDS</option>
+              <option value="internship">Internship</option>
+            </select>
+          </div>
+          <div class="field"><label>Active</label>
+            <select id="adminActiveInput"><option value="true">true</option><option value="false">false</option></select></div>
+          <div class="field" style="justify-content:flex-end"><label>&nbsp;</label>
+            <button class="btn btn-primary" onclick="App.upsertAdmin()"><i class="fa-solid fa-save"></i> Save</button></div>
+        </div>
+      </div>
+
+      <div id="adminsTableWrap"></div>
+    </section>
+
+    <!-- ============ SETTINGS ============ -->
+    <section class="view" id="view-settings">
+      <div class="page-head"><div><h1>Settings</h1><p>System information and preferences.</p></div></div>
+      <div class="card">
+        <div class="card-head"><h3>Signed-in Administrator</h3></div>
+        <div class="kv-grid">
+          <div class="kv"><div class="k">Email</div><div class="v" id="settingsEmail">-</div></div>
+          <div class="kv"><div class="k">UID</div><div class="v" id="settingsUid">-</div></div>
+          <div class="kv"><div class="k">Status</div><div class="v" id="settingsStatus">-</div></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>System</h3></div>
+        <div class="kv-grid">
+          <div class="kv"><div class="k">Application</div><div class="v">OSAS Office Management System</div></div>
+          <div class="kv"><div class="k">Institution</div><div class="v">Samar State University</div></div>
+          <div class="kv"><div class="k">Firebase Project</div><div class="v">forms-a9b1c</div></div>
+          <div class="kv"><div class="k">Version</div><div class="v">1.0.0</div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toastHost"></div>
+
+<script type="module">
+import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, collection, collectionGroup, doc, getDoc, getDocs,
+  addDoc, updateDoc, deleteDoc, setDoc, query, orderBy, where, limit,
+  serverTimestamp, Timestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ============================================================
+// FIREBASE CONFIG
+// ============================================================
+const firebaseConfig = {
+    apiKey: "AIzaSyAo5TKy65vg27n9Dkuh_PDnNT2byHndEY0",
+    authDomain: "forms-a9b1c.firebaseapp.com",
+    projectId: "forms-a9b1c",
+    storageBucket: "forms-a9b1c.firebasestorage.app",
+    messagingSenderId: "1076879732619",
+    appId: "1:1076879732619:web:89ba4135332ac30805898e",
+    measurementId: "G-88TF54KBKR"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ============================================================
+// HARDCODED MAPPINGS
+// ============================================================
+const KNOWN_QUESTION_MAPPINGS = {
+  'q_qlmstpca': 'Last Name',
+  'q_fk9oghzb': 'First Name',
+  'q_k2zyvpfz': 'Middle Name',
+  'q_s9shhkbl': 'Student ID Number',
+  'q_8qd7jc3c': 'Email Address',
+  'q_wp703hqp': 'Email', // fallback
+  'q_0t8s7oe0': 'Academic Year',
+  'q_q6jg17osf': 'Municipality/City',
+  'q_twgf9b3z': 'Year Level',
+  'q_8wnizqrr': 'Contact Number',
+  'q_ugecbmhd': 'Course/Program'
+};
+
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+const State = {
+  admin: null,
+  currentView: 'overview',
+  forms: [],
+  responses: [],
+  appointments: [],
+  documents: [],
+  tasks: [],
+  activities: [],
+  organizations: [],
+  concerns: [],
+  announcements: [],
+  logs: [],
+  admins: [],
+  charts: {},
+  studentsPage: 1,
+  studentsPageSize: 25
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const toDate = v => {
+  if (!v) return null;
+  if (v instanceof Timestamp) return v.toDate();
+  if (typeof v.toDate === 'function') return v.toDate();
+  if (v.seconds) return new Date(v.seconds*1000);
+  const d = new Date(v); return isNaN(d) ? null : d;
+};
+const fmtDate = v => { const d = toDate(v); return d ? d.toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'}) : '-'; };
+const fmtDateTime = v => { const d = toDate(v); return d ? d.toLocaleString('en-PH',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '-'; };
+
+function toast(msg, type='info'){
+  const host = $('toastHost');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':type==='error'?'fa-circle-exclamation':'fa-circle-info'}"></i><span>${esc(msg)}</span>`;
+  host.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='.3s'; setTimeout(()=>el.remove(),300); }, 3800);
+}
+
+function alertBox(id, type, msg){
+  const el = $(id);
+  if (!el) return;
+  if (!msg){ el.className='alert'; el.textContent=''; return; }
+  el.className = 'alert show ' + type;
+  el.innerHTML = `<i class="fa-solid ${type==='success'?'fa-circle-check':type==='error'?'fa-circle-exclamation':'fa-circle-info'}"></i><span>${esc(msg)}</span>`;
+}
+
+function emptyHTML(msg, icon='fa-inbox'){ return `<div class="empty"><i class="fa-solid ${icon}"></i><p>${esc(msg)}</p></div>`; }
+
+function badge(status){
+  const s = String(status||'').toLowerCase().replace(/\s+/g,'');
+  const map = {pending:'pending',approved:'approved',completed:'completed',cancelled:'cancelled',
+    rescheduled:'rescheduled',received:'received','underreview':'review','forsignature':'signature',
+    released:'released','forfollow-up':'followup',forfollowup:'followup',resolved:'resolved',closed:'closed',
+    inprogress:'inprogress',overdue:'overdue',todo:'todo',active:'active',inactive:'inactive'};
+  const cls = map[s] || 'pending';
+  return `<span class="badge ${cls}">${esc(status||'-')}</span>`;
+}
+
+// ============================================================
+// ACTIVITY LOG
+// ============================================================
+async function logAction(action, module, recordId=''){
+  if (!State.admin) return;
+  try {
+    await addDoc(collection(db,'osas_activity_logs'), {
+      adminUid: State.admin.uid,
+      adminEmail: State.admin.email || '',
+      action, module, recordId: String(recordId||''),
+      timestamp: serverTimestamp()
+    });
+  } catch(e){ console.warn('log failed:', e); }
+}
+
+// ============================================================
+// DATA LOADERS
+// ============================================================
+async function loadFormsAndResponses(){
+  const formsSnap = await getDocs(collection(db,'forms'));
+  State.forms = [];
+  formsSnap.forEach(d => {
+    const data = d.data() || {};
+    State.forms.push({ id: d.id, data, questions: Array.isArray(data.questions)?data.questions:[] });
+  });
+  
+  State.forms.sort((a,b)=>{
+    const da = toDate(a.data.createdAt)?.getTime()||0;
+    const db_ = toDate(b.data.createdAt)?.getTime()||0;
+    return db_-da;
+  });
+
+  State.responses = [];
+  try {
+    const respSnap = await getDocs(collectionGroup(db,'responses'));
+    respSnap.forEach(d => {
+      const parts = d.ref.path.split('/');
+      const formId = parts[1];
+      const form = State.forms.find(f=>f.id===formId);
+      const data = d.data() || {};
+      
+      const actualAnswers = data.answers || data;
+      let fName = form?.data?.title || form?.data?.name || form?.data?.description || formId;
+      if (fName.length > 60) fName = fName.substring(0, 60) + '...';
+
+      State.responses.push({
+        formId,
+        formName: fName,
+        formDescription: form?.data?.description || '',
+        formQuestions: form?.questions || [],
+        responseId: d.id,
+        answers: actualAnswers,
+        submittedAt: data.submittedAt || data.createdAt || d.createTime || null
+      });
+    });
+    State.responses.sort((a,b)=>{
+      const da = toDate(a.submittedAt)?.getTime()||0;
+      const dbb = toDate(b.submittedAt)?.getTime()||0;
+      return dbb-da;
+    });
+  } catch(e){
+    console.warn('responses collectionGroup read failed:', e);
+    for (const f of State.forms){
+      try {
+        const rs = await getDocs(collection(db,'forms',f.id,'responses'));
+        rs.forEach(d=>{
+          const data = d.data()||{};
+          const actualAnswers = data.answers || data;
+          let fName = f.data.title || f.data.name || f.data.description || f.id;
+          if (fName.length > 60) fName = fName.substring(0, 60) + '...';
+          
+          State.responses.push({
+            formId: f.id,
+            formName: fName,
+            formDescription: f.data.description || '',
+            formQuestions: f.questions,
+            responseId: d.id, answers: actualAnswers,
+            submittedAt: data.submittedAt || data.createdAt || d.createTime || null
+          });
+        });
+      } catch(err){ console.warn('fallback response read failed for', f.id, err); }
+    }
+    State.responses.sort((a,b)=>{
+      const da = toDate(a.submittedAt)?.getTime()||0;
+      const dbb = toDate(b.submittedAt)?.getTime()||0;
+      return dbb-da;
+    });
+  }
+}
+
+async function loadCollection(name, stateKey){
+  try {
+    const snap = await getDocs(query(collection(db, name), orderBy('createdAt','desc')));
+    State[stateKey] = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+  } catch(e){
+    try {
+      const snap = await getDocs(collection(db, name));
+      State[stateKey] = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+      State[stateKey].sort((a,b)=>{
+        const da = toDate(a.createdAt)?.getTime()||0;
+        const dbb = toDate(b.createdAt)?.getTime()||0;
+        return dbb-da;
+      });
+    } catch(err){
+      console.warn('load failed for', name, err);
+      State[stateKey] = [];
+    }
+  }
+}
+
+function mapResponseFields(resp){
+  const out = [];
+  const qmap = {};
+  
+  (resp.formQuestions||[]).forEach(q=>{ 
+    let label = q.description || q.title || q.label || q.text || q.name;
+    if (!label) label = `Question (${q.id})`;
+    qmap[q.id] = { ...q, resolvedLabel: label }; 
+  });
+
+  Object.keys(resp.answers||{}).forEach(key=>{
+    if (!key.startsWith('q_')) return;
+    const val = resp.answers[key];
+    if (val === '' || val === null || val === undefined) return;
+    if (Array.isArray(val) && val.length===0) return;
+    
+    let displayLabel = KNOWN_QUESTION_MAPPINGS[key] || qmap[key]?.resolvedLabel || `Question (${key})`;
+    if (displayLabel.length > 100) displayLabel = displayLabel.substring(0, 100) + '...';
+
+    out.push({
+      qid: key,
+      label: displayLabel,
+      value: Array.isArray(val) ? val.join(', ') : String(val),
+      required: !!qmap[key]?.required
+    });
+  });
+  return out;
+}
+
+function inferStudentFields(resp){
+  const fields = mapResponseFields(resp);
+  const get = (exactLabel) => {
+    for (const f of fields){
+      if (f.label.toLowerCase() === exactLabel.toLowerCase()) return f.value;
+    }
+    return '';
+  };
+  
+  const lastName = get('Last Name');
+  const firstName = get('First Name');
+  const middleName = get('Middle Name');
+  const fullName = [firstName, middleName, lastName].filter(Boolean).join(' ');
+
+  return {
+    lastName,
+    firstName,
+    middleName,
+    fullName: fullName || '(Unnamed)',
+    studentNo: get('Student ID Number'),
+    email: get('Email Address') || get('Email'),
+    department: get('Department') || get('Dept') || get('College'),
+    course: get('Course/Program') || get('Course') || get('Program'),
+    yearLevel: get('Year Level')
+  };
+}
+
+// ============================================================
+// VIEW ROUTER
+// ============================================================
+const VIEW_TITLES = {
+  overview:'Overview', students:'Student Records', forms:'Forms & Submissions',
+  appointments:'Appointments', documents:'Document Tracking', tasks:'Tasks',
+  announcements:'Announcements', activities:'Activities & Events',
+  organizations:'Student Organizations', concerns:'Student Concerns',
+  reports:'Reports', logs:'Activity Logs', admins:'Administrator Management', settings:'Settings'
+};
+
+function navigate(view){
+  State.currentView = view;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el = $('view-'+view);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-item[data-view]').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  $('topbarTitle').textContent = VIEW_TITLES[view] || view;
+  
+  if (window.innerWidth <= 900){
+    $('sidebar').classList.remove('mobile-open');
+    $('overlay').classList.remove('show');
+  }
+  
+  if (view==='overview') renderOverview();
+  if (view==='students'){ renderStudentFilters(); renderStudentsTable(); }
+  if (view==='forms') renderForms();
+  if (view==='appointments') renderAppointments();
+  if (view==='documents') renderDocuments();
+  if (view==='tasks') renderTasks();
+  if (view==='announcements') renderAnnouncements();
+  if (view==='activities') renderActivities();
+  if (view==='organizations') renderOrganizations();
+  if (view==='concerns') renderConcerns();
+  if (view==='logs') renderLogs();
+  if (view==='admins') renderAdmins();
+  if (view==='settings') renderSettings();
+}
+
+document.querySelectorAll('.nav-item[data-view]').forEach(btn=>{
+  btn.addEventListener('click', ()=>navigate(btn.dataset.view));
+});
+
+$('sidebarToggle').addEventListener('click', ()=>{
+  if (window.innerWidth <= 900){
+    $('sidebar').classList.toggle('mobile-open');
+    $('overlay').classList.toggle('show');
+  } else {
+    $('sidebar').classList.toggle('collapsed');
+    $('main').classList.toggle('collapsed');
+  }
+});
+$('overlay').addEventListener('click', ()=>{
+  $('sidebar').classList.remove('mobile-open');
+  $('overlay').classList.remove('show');
+});
+
+$('logoutBtn').addEventListener('click', async ()=>{
+  await logAction('logout','system');
+  await signOut(auth);
+  window.location.href = 'login.html';
+});
+
+// ============================================================
+// OVERVIEW
+// ============================================================
+function renderOverview(){
+  const totalForms = State.forms.length;
+  const totalResponses = State.responses.length;
+  const uniq = new Set();
+  State.responses.forEach(r=>{
+    const s = inferStudentFields(r);
+    const key = (s.email||'')+'|'+(s.studentNo||'')+'|'+(s.fullName||'');
+    if (key.trim()!=='||') uniq.add(key);
+  });
+  const totalStudents = uniq.size;
+
+  const activeAdmins = State.admins.filter(a=>a.active===true).length;
+  const totalActivities = State.activities.length;
+  const pendingAppts = State.appointments.filter(a=>String(a.status||'').toLowerCase()==='pending').length;
+  const pendingDocs = State.documents.filter(d=>{
+    const s = String(d.status||'').toLowerCase();
+    return s==='received' || s==='under review' || s==='for signature';
+  }).length;
+  const openConcerns = State.concerns.filter(c=>{
+    const s = String(c.status||'').toLowerCase();
+    return s!=='resolved' && s!=='closed';
+  }).length;
+
+  const cards = [
+    ['fa-file-lines', totalForms, 'Published Forms'],
+    ['fa-inbox', totalResponses, 'Student Responses'],
+    ['fa-user-graduate', totalStudents, 'Unique Students'],
+    ['fa-user-shield', activeAdmins, 'Active Administrators'],
+    ['fa-calendar-days', totalActivities, 'Activities'],
+    ['fa-calendar-check', pendingAppts, 'Pending Appointments'],
+    ['fa-folder-open', pendingDocs, 'Pending Documents'],
+    ['fa-headset', openConcerns, 'Open Concerns']
+  ];
+  $('statsGrid').innerHTML = cards.map(([i,v,l])=>`
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid ${i}"></i></div>
+      <div class="stat-val">${v}</div>
+      <div class="stat-label">${l}</div>
+    </div>`).join('');
+
+  renderSubmissionsChart();
+  renderFormsChart();
+
+  const recent = State.responses.slice(0,6);
+  $('recentSubmissions').innerHTML = recent.length
+    ? recent.map(r=>{
+        const s = inferStudentFields(r);
+        return `<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border);font-size:13px">
+          <div><strong>${esc(s.fullName)}</strong><div class="muted" style="font-size:11.5px">${esc(r.formName)}</div></div>
+          <div class="muted" style="font-size:11.5px;white-space:nowrap">${fmtDate(r.submittedAt)}</div>
+        </div>`;
+      }).join('')
+    : emptyHTML('No responses yet.','fa-inbox');
+
+  const recentLogs = State.logs.slice(0,6);
+  $('recentActivity').innerHTML = recentLogs.length
+    ? recentLogs.map(l=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border);font-size:13px">
+        <div><strong>${esc(l.action||'')}</strong><div class="muted" style="font-size:11.5px">${esc(l.module||'')} • ${esc(l.adminEmail||'')}</div></div>
+        <div class="muted" style="font-size:11.5px;white-space:nowrap">${fmtDate(l.timestamp)}</div>
+      </div>`).join('')
+    : emptyHTML('No activity yet.','fa-clipboard');
+
+  const rf = State.forms.slice(0,5);
+  $('recentForms').innerHTML = rf.length
+    ? rf.map(f=>{
+        let fName = f.data.title || f.data.name || f.data.description || f.id;
+        if (fName.length > 80) fName = fName.substring(0, 80) + '...';
+        return `<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--border);font-size:13px">
+          <div><strong>${esc(fName)}</strong><div class="muted" style="font-size:11.5px">${f.questions.length} questions</div></div>
+          <div class="muted" style="font-size:11.5px;white-space:nowrap">${fmtDate(f.data.createdAt)}</div>
+        </div>`;
+      }).join('')
+    : emptyHTML('No forms found.','fa-file');
+}
+
+function renderSubmissionsChart(){
+  const ctx = $('chartSubmissions');
+  if (!ctx) return;
+  const months = {};
+  State.responses.forEach(r=>{
+    const d = toDate(r.submittedAt);
+    if (!d) return;
+    const k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    months[k] = (months[k]||0)+1;
+  });
+  const keys = Object.keys(months).sort().slice(-12);
+  if (keys.length === 0){
+    ctx.style.display='none'; $('chartSubmissionsEmpty').style.display='block'; return;
+  }
+  ctx.style.display='block'; $('chartSubmissionsEmpty').style.display='none';
+  if (State.charts.submissions) State.charts.submissions.destroy();
+  State.charts.submissions = new Chart(ctx,{
+    type:'line',
+    data:{ labels: keys, datasets:[{ label:'Submissions', data: keys.map(k=>months[k]),
+      borderColor:'#0284c7', backgroundColor:'rgba(56,189,248,.15)', fill:true, tension:.35, pointRadius:3 }]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ y:{beginAtZero:true, ticks:{precision:0}} } }
+  });
+}
+
+function renderFormsChart(){
+  const ctx = $('chartForms');
+  if (!ctx) return;
+  const counts = State.forms.map(f=>({
+    name: (f.data.title || f.data.name || f.data.description || f.id).slice(0,24),
+    count: State.responses.filter(r=>r.formId===f.id).length
+  })).filter(x=>x.count>0).slice(0,8);
+  if (counts.length===0){
+    ctx.style.display='none'; $('chartFormsEmpty').style.display='block'; return;
+  }
+  ctx.style.display='block'; $('chartFormsEmpty').style.display='none';
+  if (State.charts.forms) State.charts.forms.destroy();
+  State.charts.forms = new Chart(ctx,{
+    type:'bar',
+    data:{ labels: counts.map(c=>c.name), datasets:[{ label:'Responses', data: counts.map(c=>c.count),
+      backgroundColor:'#38bdf8', borderRadius:6 }]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ y:{beginAtZero:true, ticks:{precision:0}} } }
+  });
+}
+
+// ============================================================
+// STUDENT RECORDS
+// ============================================================
+function renderStudentFilters(){
+  const sel = $('studentFormFilter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Forms</option>' +
+    State.forms.map(f=>{
+      let fName = f.data.title || f.data.name || f.data.description || f.id;
+      if (fName.length > 60) fName = fName.substring(0, 60) + '...';
+      return `<option value="${esc(f.id)}">${esc(fName)}</option>`;
+    }).join('');
+  sel.value = cur;
+}
+
+function filteredStudents(){
+  const term = ($('studentSearch').value||'').toLowerCase().trim();
+  const formId = $('studentFormFilter').value;
+  const days = parseInt($('studentDateFilter').value||'0',10);
+  const now = Date.now();
+  return State.responses.filter(r=>{
+    if (formId && r.formId !== formId) return false;
+    if (days){
+      const d = toDate(r.submittedAt);
+      if (!d) return false;
+      if (now - d.getTime() > days*86400000) return false;
+    }
+    if (!term) return true;
+    const s = inferStudentFields(r);
+    const hay = [s.fullName, s.lastName, s.firstName, s.middleName, s.studentNo, s.email, s.department, s.course, s.yearLevel, r.formName]
+      .join(' ').toLowerCase();
+    const allFields = mapResponseFields(r).map(f=>f.value).join(' ').toLowerCase();
+    return hay.includes(term) || allFields.includes(term);
+  });
+}
+
+function renderStudentsTable(){
+  State.studentsPageSize = parseInt($('studentPageSize').value,10);
+  const rows = filteredStudents();
+  const total = rows.length;
+  const size = State.studentsPageSize;
+  const pages = Math.max(1, Math.ceil(total/size));
+  if (State.studentsPage > pages) State.studentsPage = pages;
+  const start = (State.studentsPage-1)*size;
+  const slice = rows.slice(start, start+size);
+
+  if (total === 0){
+    $('studentsTableWrap').innerHTML = emptyHTML('No student records found.','fa-user-graduate');
+    return;
+  }
+
+  const html = `<div class="table-wrap"><table>
+    <thead><tr>
+      <th>Last Name</th><th>First Name</th><th>Middle Name</th><th>Student No.</th><th>Email</th>
+      <th>Course</th><th>Year</th><th>Form</th><th>Submitted</th>
+    </tr></thead><tbody>
+    ${slice.map((r,i)=>{
+      const s = inferStudentFields(r);
+      const idx = start+i;
+      return `<tr>
+        <td><strong>${esc(s.lastName || '-')}</strong></td>
+        <td>${esc(s.firstName || '-')}</td>
+        <td>${esc(s.middleName || '-')}</td>
+        <td>${esc(s.studentNo||'-')}</td>
+        <td>${esc(s.email||'-')}</td>
+        <td>${esc(s.course||'-')}</td>
+        <td>${esc(s.yearLevel||'-')}</td>
+        <td class="muted" style="max-width:150px">${esc(r.formName)}</td>
+        <td class="muted">${fmtDate(r.submittedAt)}</td>
+      </tr>`;
+    }).join('')}
+    </tbody></table></div>
+    <div class="pager">
+      <span>Showing ${start+1}-${Math.min(start+size,total)} of ${total}</span>
+      <div>
+        <button ${State.studentsPage<=1?'disabled':''} onclick="App.studentsPrev()">Prev</button>
+        <span style="margin:0 8px">Page ${State.studentsPage} / ${pages}</span>
+        <button ${State.studentsPage>=pages?'disabled':''} onclick="App.studentsNext()">Next</button>
+      </div>
+    </div>`;
+  $('studentsTableWrap').innerHTML = html;
+  $('studentsDetail').innerHTML = '';
+}
+
+function viewStudent(idx){
+  const all = filteredStudents();
+  const r = all[idx];
+  if (!r) return;
+  const fields = mapResponseFields(r);
+  const s = inferStudentFields(r);
+  logAction('view student record', 'students', r.responseId);
+  const html = `
+    <div class="detail-panel">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+        <div>
+          <h4 style="border:none;margin:0;padding:0">${esc(s.fullName)}</h4>
+          <div class="muted" style="font-size:12px">${esc(r.formName)} • Submitted ${fmtDateTime(r.submittedAt)}</div>
+        </div>
+        <button class="btn btn-sm btn-outline" onclick="$('studentsDetail').innerHTML=''"><i class="fa-solid fa-xmark"></i> Close</button>
+      </div>
+      <div class="kv-grid">
+        ${fields.map(f=>`<div class="kv"><div class="k">${esc(f.label)}</div><div class="v">${esc(f.value)}</div></div>`).join('')}
+      </div>
+    </div>`;
+  $('studentsDetail').innerHTML = html;
+  $('studentsDetail').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function exportStudentsCSV(){
+  const rows = filteredStudents();
+  if (!rows.length){ alertBox('studentsAlert','warning','No records to export.'); return; }
+  const labelSet = new Set();
+  rows.forEach(r=> mapResponseFields(r).forEach(f=>labelSet.add(f.label)));
+  const labels = Array.from(labelSet);
+  const header = ['Form','Submitted',...labels];
+  const lines = [header.map(csvCell).join(',')];
+  rows.forEach(r=>{
+    const map = {};
+    mapResponseFields(r).forEach(f=>{ map[f.label]=f.value; });
+    const line = [r.formName, fmtDateTime(r.submittedAt), ...labels.map(l=>map[l]||'')];
+    lines.push(line.map(csvCell).join(','));
+  });
+  downloadFile('student-records.csv', lines.join('\n'), 'text/csv');
+  logAction('export students CSV','students');
+  alertBox('studentsAlert','success',`Exported ${rows.length} records to CSV.`);
+}
+
+function csvCell(v){
+  const s = String(v??'');
+  if (/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+
+function downloadFile(name, content, mime){
+  const blob = new Blob([content],{type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500);
+}
+
+function printStudents(){
+  const rows = filteredStudents();
+  if (!rows.length){ alertBox('studentsAlert','warning','No records to print.'); return; }
+  const labelSet = new Set();
+  rows.forEach(r=> mapResponseFields(r).forEach(f=>labelSet.add(f.label)));
+  const labels = Array.from(labelSet);
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>Student Records</title><style>
+    body{font-family:Arial;padding:24px} h1{font-size:18px} table{border-collapse:collapse;width:100%;font-size:11px}
+    th,td{border:1px solid #ccc;padding:5px;text-align:left;vertical-align:top} th{background:#f0f0f0}
+  </style></head><body>
+    <h1>Student Records — Samar State University OSAS</h1>
+    <p style="font-size:11px;color:#666">Generated ${new Date().toLocaleString()}</p>
+    <table><thead><tr>${['Form','Submitted',...labels].map(l=>`<th>${esc(l)}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r=>{
+      const map = {};
+      mapResponseFields(r).forEach(f=>map[f.label]=f.value);
+      return `<tr>${[r.formName,fmtDateTime(r.submittedAt),...labels.map(l=>map[l]||'')].map(v=>`<td>${esc(v)}</td>`).join('')}</tr>`;
+    }).join('')}</tbody></table>
+  </body></html>`);
+  w.document.close(); w.print();
+  logAction('print student records','students');
+}
+
+// ============================================================
+// FORMS VIEW
+// ============================================================
+function renderForms(){
+  if (!State.forms.length){
+    $('formsList').innerHTML = emptyHTML('No forms found in the forms collection.','fa-file');
+    return;
+  }
+  $('formsList').innerHTML = State.forms.map(f=>{
+    const resp = State.responses.filter(r=>r.formId===f.id);
+    let fName = f.data.title || f.data.name || f.data.description || f.id;
+    let desc = f.data.description || '';
+    if (desc === fName) desc = ''; 
+
+    return `<div class="card" style="margin-bottom:14px">
+      <div class="card-head">
+        <div>
+          <h3 style="max-width:800px;line-height:1.4">${esc(fName)}</h3>
+          ${desc ? `<div class="muted" style="font-size:12.5px;max-width:800px;margin-top:6px;line-height:1.5">${esc(desc)}</div>` : ''}
+          <div class="muted" style="font-size:12px;margin-top:8px"><strong>${f.questions.length}</strong> questions • <strong>${resp.length}</strong> responses • Created ${fmtDate(f.data.createdAt)}</div>
+        </div>
+      </div>
+      <details>
+        <summary style="cursor:pointer;font-size:12.5px;color:var(--secondary-dark);font-weight:600">View questions</summary>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+          ${f.questions.map((q,i)=>{
+            let qLabel = KNOWN_QUESTION_MAPPINGS[q.id] || q.description || q.title || q.label || q.text || q.name;
+            if (!qLabel) qLabel = `Question (${q.id})`;
+            if (qLabel.length > 150) qLabel = qLabel.substring(0,150)+'...';
+            
+            return `<div style="font-size:12.5px;padding:6px 0;border-bottom:1px dashed var(--border)">
+              <strong>${i+1}.</strong> ${esc(qLabel)} ${q.required?'<span class="badge pending" style="font-size:9px;padding:1px 6px">required</span>':''}
+            </div>`;
+          }).join('') || '<div class="muted">No questions defined.</div>'}
+        </div>
+      </details>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// APPOINTMENTS
+// ============================================================
+const APPT_STATUSES = ['Pending','Approved','Rescheduled','Completed','Cancelled'];
+
+function renderAppointments(){
+  const term = ($('apptSearch').value||'').toLowerCase();
+  const status = $('apptStatusFilter').value;
+  const rows = State.appointments.filter(a=>{
+    if (status && a.status !== status) return false;
+    if (!term) return true;
+    return ((a.studentName||'')+' '+(a.purpose||'')+' '+(a.studentEmail||'')).toLowerCase().includes(term);
+  });
+  if (!rows.length){
+    $('apptTableWrap').innerHTML = emptyHTML('No appointments found.','fa-calendar-check');
+    return;
+  }
+  $('apptTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Student</th><th>Email</th><th>Purpose</th><th>Date</th><th>Time</th><th>Personnel</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${rows.map(a=>`<tr>
+      <td><strong>${esc(a.studentName||'-')}</strong></td>
+      <td class="muted">${esc(a.studentEmail||'-')}</td>
+      <td>${esc(a.purpose||'-')}</td>
+      <td>${fmtDate(a.apptDate)}</td>
+      <td>${esc(a.apptTime||'-')}</td>
+      <td>${esc(a.personnel||'-')}</td>
+      <td>${badge(a.status)}</td>
+      <td>
+        <select class="btn-sm" style="padding:4px;border:1px solid var(--border);border-radius:6px;font-size:11.5px" onchange="App.updateApptStatus('${a.id}', this.value)">
+          ${APPT_STATUSES.map(s=>`<option ${a.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+        <button class="btn btn-sm btn-outline" onclick="App.deleteRecord('osas_appointments','${a.id}','appointments','appointment')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function showForm(type){
+  const hosts = {appointment:'apptFormHost',document:'docFormHost',task:'taskFormHost',
+    announcement:'annFormHost',activity:'actFormHost',organization:'orgFormHost',concern:'concernFormHost'};
+  const host = $(hosts[type]);
+  if (!host) return;
+  if (host.innerHTML.trim()){ host.innerHTML=''; return; }
+  const forms = {
+    appointment: `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head"><h3>New Appointment</h3><button class="btn btn-sm btn-outline" onclick="$('apptFormHost').innerHTML=''">Cancel</button></div>
+        <div class="form-grid">
+          <div class="field"><label>Student Name*</label><input id="af_name"></div>
+          <div class="field"><label>Student Email</label><input type="email" id="af_email"></div>
+          <div class="field full"><label>Purpose*</label><input id="af_purpose"></div>
+          <div class="field"><label>Date*</label><input type="date" id="af_date"></div>
+          <div class="field"><label>Time*</label><input type="time" id="af_time"></div>
+          <div class="field"><label>Assigned Personnel</label><input id="af_personnel"></div>
+          <div class="field"><label>Status</label><select id="af_status">${APPT_STATUSES.map(s=>`<option>${s}</option>`).join('')}</select></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.createAppointment()"><i class="fa-solid fa-save"></i> Save Appointment</button></div>
+        <div id="apptFormErr" class="alert error" style="margin-top:10px"></div>
+      </div>`,
+    document: `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head"><h3>New Document</h3><button class="btn btn-sm btn-outline" onclick="$('docFormHost').innerHTML=''">Cancel</button></div>
+        <div class="form-grid">
+          <div class="field"><label>Reference No.*</label><input id="df_ref"></div>
+          <div class="field"><label>Title*</label><input id="df_title"></div>
+          <div class="field"><label>Type</label><input id="df_type" placeholder="e.g. Memorandum"></div>
+          <div class="field"><label>Sender</label><input id="df_sender"></div>
+          <div class="field"><label>Recipient</label><input id="df_recipient"></div>
+          <div class="field"><label>Date Received</label><input type="date" id="df_recv"></div>
+          <div class="field"><label>Assigned Personnel</label><input id="df_personnel"></div>
+          <div class="field"><label>Status</label><select id="df_status">
+            <option>Received</option><option>Under Review</option><option>For Signature</option><option>Approved</option><option>Released</option><option>Completed</option>
+          </select></div>
+          <div class="field full"><label>Remarks</label><textarea id="df_remarks"></textarea></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.createDocument()"><i class="fa-solid fa-save"></i> Save Document</button></div>
+        <div id="docFormErr" class="alert error" style="margin-top:10px"></div>
+      </div>`,
+    task: `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head"><h3>New Task</h3><button class="btn btn-sm btn-outline" onclick="$('taskFormHost').innerHTML=''">Cancel</button></div>
+        <div class="form-grid">
+          <div class="field full"><label>Title*</label><input id="tf_title"></div>
+          <div class="field full"><label>Description</label><textarea id="tf_desc"></textarea></div>
+          <div class="field"><label>Assigned To</label><input id="tf_assigned"></div>
+          <div class="field"><label>Priority</label><select id="tf_priority"><option>Low</option><option selected>Medium</option><option>High</option></select></div>
+          <div class="field"><label>Due Date</label><input type="date" id="tf_due"></div>
+          <div class="field"><label>Status</label><select id="tf_status"><option>To Do</option><option>In Progress</option><option>Completed</option><option>Overdue</option></select></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.createTask()"><i class="fa-solid fa-save"></i> Save Task</button></div>
+        <div id="taskFormErr" class="alert error" style="margin-top:10px"></div>
+      </div>`,
+    announcement: `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head"><h3>New Announcement</h3><button class="btn btn-sm btn-outline" onclick="$('annFormHost').innerHTML=''">Cancel</button></div>
+        <div class="form-grid">
+          <div class="field full"><label>Title*</label><input id="anf_title"></div>
+          <div class="field full"><label>Content*</label><textarea id="anf_content" style="min-height:100px"></textarea></div>
+          <div class="field"><label>Author</label><input id="anf_author" value="${esc(State.admin?.email||'')}"></div>
+          <div class="field"><label>Status</label><select id="anf_status"><option>Published</option><option>Draft</option><option>Archived</option></select></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.createAnnouncement()"><i class="fa-solid fa-save"></i> Save Announcement</button></div>
+        <div id="annFormErr" class="alert error" style="margin-top:10px"></div>
+      </div>`,
+    activity: `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head"><h3>New Activity</h3><button class="btn btn-sm btn-outline" onclick="$('actFormHost').innerHTML=''">Cancel</button></div>
+        <div class="form-grid">
+          <div class="field full"><label>Title*</label><input id="atf_title"></div>
+          <div class="field full"><label>Description</label><textarea id="atf_desc"></textarea></div>
+          <div class="field"><label>Category</label><input id="atf_cat" placeholder="e.g. Seminar"></div>
+          <div class="field"><label>Organizer</label><input id="atf_org"></div>
+          <div class="field"><label>Venue</label><input id="atf_venue"></div>
+          <div class="field"><label>Start Date*</label><input type="date" id="atf_start"></div>
+          <div class="field"><label>End Date</label><input type="date" id="atf_end"></div>
+          <div class="field"><label>Participants</label><input type="number" id="atf_participants" min="0"></div>
+          <div class="field"><label>Status</label><select id="atf_status"><option>Planned</option><option>Ongoing</option><option>Completed</option><option>Cancelled</option></select></div>
+          <div class="field full"><label>Remarks</label><textarea id="atf_remarks"></textarea></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.createActivity()"><i class="fa-solid fa-save"></i> Save Activity</button></div>
+        <div id="actFormErr" class="alert error" style="margin-top:10px"></div>
+      </div>`,
+    organization: `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head"><h3>New Organization</h3><button class="btn btn-sm btn-outline" onclick="$('orgFormHost').innerHTML=''">Cancel</button></div>
+        <div class="form-grid">
+          <div class="field"><label>Organization Name*</label><input id="of_name"></div>
+          <div class="field"><label>Abbreviation</label><input id="of_abbr"></div>
+          <div class="field"><label>Adviser</label><input id="of_adviser"></div>
+          <div class="field"><label>President</label><input id="of_president"></div>
+          <div class="field"><label>Members</label><input type="number" id="of_members" min="0"></div>
+          <div class="field"><label>Accreditation Status</label><select id="of_status"><option>Accredited</option><option>Probationary</option><option>Expired</option><option>Pending</option></select></div>
+          <div class="field"><label>Accreditation Date</label><input type="date" id="of_accdate"></div>
+          <div class="field"><label>Expiration Date</label><input type="date" id="of_expdate"></div>
+          <div class="field full"><label>Remarks</label><textarea id="of_remarks"></textarea></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.createOrganization()"><i class="fa-solid fa-save"></i> Save Organization</button></div>
+        <div id="orgFormErr" class="alert error" style="margin-top:10px"></div>
+      </div>`,
+    concern: `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head"><h3>New Concern</h3><button class="btn btn-sm btn-outline" onclick="$('concernFormHost').innerHTML=''">Cancel</button></div>
+        <div class="form-grid">
+          <div class="field"><label>Student Name*</label><input id="cf_name"></div>
+          <div class="field"><label>Student Email / Contact</label><input id="cf_email"></div>
+          <div class="field"><label>Category</label><input id="cf_cat" placeholder="e.g. Welfare"></div>
+          <div class="field full"><label>Description*</label><textarea id="cf_desc"></textarea></div>
+          <div class="field"><label>Assigned Personnel</label><input id="cf_personnel"></div>
+          <div class="field"><label>Status</label><select id="cf_status"><option>Pending</option><option>In Progress</option><option>For Follow-up</option><option>Resolved</option><option>Closed</option></select></div>
+          <div class="field full"><label>Action Taken</label><textarea id="cf_action"></textarea></div>
+          <div class="field full"><label>Follow-up Notes</label><textarea id="cf_notes"></textarea></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="App.createConcern()"><i class="fa-solid fa-save"></i> Save Concern</button></div>
+        <div id="concernFormErr" class="alert error" style="margin-top:10px"></div>
+      </div>`
+  };
+  host.innerHTML = forms[type] || '';
+}
+
+async function createAppointment(){
+  const name = $('af_name').value.trim();
+  const purpose = $('af_purpose').value.trim();
+  const date = $('af_date').value;
+  const time = $('af_time').value;
+  const err = $('apptFormErr');
+  if (!name || !purpose || !date || !time){
+    err.className='alert show error'; err.textContent='Please fill in required fields (name, purpose, date, time).'; return;
+  }
+  err.className='alert';
+  try {
+    const ref = await addDoc(collection(db,'osas_appointments'),{
+      studentName:name, studentEmail:$('af_email').value.trim(),
+      purpose, apptDate: date, apptTime: time,
+      personnel: $('af_personnel').value.trim(),
+      status: $('af_status').value,
+      createdAt: serverTimestamp(), createdBy: State.admin.uid
+    });
+    await logAction('create appointment','appointments',ref.id);
+    toast('Appointment saved.','success');
+    $('apptFormHost').innerHTML='';
+    await loadCollection('osas_appointments','appointments');
+    renderAppointments();
+  } catch(e){ console.error(e); err.className='alert show error'; err.textContent='Save failed: '+e.message; }
+}
+
+async function updateApptStatus(id, status){
+  try {
+    await updateDoc(doc(db,'osas_appointments',id),{ status, updatedAt: serverTimestamp() });
+    await logAction('update appointment status → '+status,'appointments',id);
+    toast('Appointment status updated.','success');
+    await loadCollection('osas_appointments','appointments');
+    renderAppointments();
+  } catch(e){ console.error(e); alertBox('apptAlert','error','Update failed: '+e.message); }
+}
+
+// ============================================================
+// DOCUMENTS
+// ============================================================
+async function createDocument(){
+  const ref = $('df_ref').value.trim();
+  const title = $('df_title').value.trim();
+  const err = $('docFormErr');
+  if (!ref || !title){ err.className='alert show error'; err.textContent='Reference and title are required.'; return; }
+  err.className='alert';
+  try {
+    const d = await addDoc(collection(db,'osas_documents'),{
+      refNo: ref, title, type: $('df_type').value.trim(),
+      sender: $('df_sender').value.trim(), recipient: $('df_recipient').value.trim(),
+      dateReceived: $('df_recv').value || null,
+      personnel: $('df_personnel').value.trim(),
+      status: $('df_status').value,
+      remarks: $('df_remarks').value.trim(),
+      createdAt: serverTimestamp(), createdBy: State.admin.uid
+    });
+    await logAction('create document','documents',d.id);
+    toast('Document saved.','success');
+    $('docFormHost').innerHTML='';
+    await loadCollection('osas_documents','documents');
+    renderDocuments();
+  } catch(e){ console.error(e); err.className='alert show error'; err.textContent='Save failed: '+e.message; }
+}
+
+function renderDocuments(){
+  const term = ($('docSearch').value||'').toLowerCase();
+  const status = $('docStatusFilter').value;
+  const rows = State.documents.filter(d=>{
+    if (status && d.status !== status) return false;
+    if (!term) return true;
+    return ((d.refNo||'')+' '+(d.title||'')+' '+(d.sender||'')+' '+(d.recipient||'')).toLowerCase().includes(term);
+  });
+  if (!rows.length){ $('docTableWrap').innerHTML = emptyHTML('No documents found.','fa-folder-open'); return; }
+  $('docTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Ref No.</th><th>Title</th><th>Type</th><th>Sender</th><th>Recipient</th><th>Received</th><th>Personnel</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${rows.map(d=>`<tr>
+      <td><strong>${esc(d.refNo||'-')}</strong></td>
+      <td>${esc(d.title||'-')}</td>
+      <td class="muted">${esc(d.type||'-')}</td>
+      <td>${esc(d.sender||'-')}</td>
+      <td>${esc(d.recipient||'-')}</td>
+      <td>${fmtDate(d.dateReceived)}</td>
+      <td>${esc(d.personnel||'-')}</td>
+      <td>${badge(d.status)}</td>
+      <td>
+        <select style="padding:4px;border:1px solid var(--border);border-radius:6px;font-size:11.5px" onchange="App.updateDocStatus('${d.id}',this.value)">
+          ${['Received','Under Review','For Signature','Approved','Released','Completed'].map(s=>`<option ${d.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+        <button class="btn btn-sm btn-outline" onclick="App.deleteRecord('osas_documents','${d.id}','documents','document')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+async function updateDocStatus(id, status){
+  try {
+    await updateDoc(doc(db,'osas_documents',id),{ status, updatedAt: serverTimestamp() });
+    await logAction('update document status → '+status,'documents',id);
+    toast('Document status updated.','success');
+    await loadCollection('osas_documents','documents');
+    renderDocuments();
+  } catch(e){ console.error(e); alertBox('docAlert','error','Update failed: '+e.message); }
+}
+
+// ============================================================
+// TASKS
+// ============================================================
+async function createTask(){
+  const title = $('tf_title').value.trim();
+  const err = $('taskFormErr');
+  if (!title){ err.className='alert show error'; err.textContent='Task title is required.'; return; }
+  err.className='alert';
+  try {
+    const r = await addDoc(collection(db,'osas_tasks'),{
+      title, description: $('tf_desc').value.trim(),
+      assignedTo: $('tf_assigned').value.trim(),
+      priority: $('tf_priority').value,
+      dueDate: $('tf_due').value || null,
+      status: $('tf_status').value,
+      createdAt: serverTimestamp(), createdBy: State.admin.uid
+    });
+    await logAction('create task','tasks',r.id);
+    toast('Task saved.','success');
+    $('taskFormHost').innerHTML='';
+    await loadCollection('osas_tasks','tasks');
+    renderTasks();
+  } catch(e){ console.error(e); err.className='alert show error'; err.textContent='Save failed: '+e.message; }
+}
+
+function renderTasks(){
+  const term = ($('taskSearch').value||'').toLowerCase();
+  const status = $('taskStatusFilter').value;
+  const prio = $('taskPriorityFilter').value;
+  const rows = State.tasks.filter(t=>{
+    if (status && t.status !== status) return false;
+    if (prio && t.priority !== prio) return false;
+    if (!term) return true;
+    return ((t.title||'')+' '+(t.assignedTo||'')).toLowerCase().includes(term);
+  });
+  if (!rows.length){ $('taskTableWrap').innerHTML = emptyHTML('No tasks found.','fa-list-check'); return; }
+  $('taskTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Title</th><th>Assigned</th><th>Priority</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${rows.map(t=>`<tr>
+      <td><strong>${esc(t.title)}</strong><div class="muted" style="font-size:11.5px">${esc((t.description||'').slice(0,80))}</div></td>
+      <td>${esc(t.assignedTo||'-')}</td>
+      <td>${badge(t.priority==='High'?'overdue':t.priority==='Medium'?'pending':'inprogress').replace('>'+t.priority,'>'+t.priority)}</td>
+      <td>${fmtDate(t.dueDate)}</td>
+      <td>${badge(t.status)}</td>
+      <td>
+        <select style="padding:4px;border:1px solid var(--border);border-radius:6px;font-size:11.5px" onchange="App.updateTaskStatus('${t.id}',this.value)">
+          ${['To Do','In Progress','Completed','Overdue'].map(s=>`<option ${t.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+        <button class="btn btn-sm btn-outline" onclick="App.deleteRecord('osas_tasks','${t.id}','tasks','task')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+async function updateTaskStatus(id, status){
+  try {
+    await updateDoc(doc(db,'osas_tasks',id),{ status, updatedAt: serverTimestamp() });
+    await logAction('update task status → '+status,'tasks',id);
+    toast('Task updated.','success');
+    await loadCollection('osas_tasks','tasks');
+    renderTasks();
+  } catch(e){ console.error(e); alertBox('taskAlert','error','Update failed: '+e.message); }
+}
+
+// ============================================================
+// ANNOUNCEMENTS
+// ============================================================
+async function createAnnouncement(){
+  const title = $('anf_title').value.trim();
+  const content = $('anf_content').value.trim();
+  const err = $('annFormErr');
+  if (!title || !content){ err.className='alert show error'; err.textContent='Title and content are required.'; return; }
+  err.className='alert';
+  try {
+    const r = await addDoc(collection(db,'osas_announcements'),{
+      title, content, author: $('anf_author').value.trim(),
+      status: $('anf_status').value,
+      createdAt: serverTimestamp(), createdBy: State.admin.uid
+    });
+    await logAction('create announcement','announcements',r.id);
+    toast('Announcement published.','success');
+    $('annFormHost').innerHTML='';
+    await loadCollection('osas_announcements','announcements');
+    renderAnnouncements();
+  } catch(e){ console.error(e); err.className='alert show error'; err.textContent='Save failed: '+e.message; }
+}
+
+function renderAnnouncements(){
+  if (!State.announcements.length){ $('annList').innerHTML = emptyHTML('No announcements yet.','fa-bullhorn'); return; }
+  $('annList').innerHTML = State.announcements.map(a=>`
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-head">
+        <div>
+          <h3>${esc(a.title)}</h3>
+          <div class="muted" style="font-size:11.5px">${esc(a.author||'-')} • ${fmtDate(a.createdAt)} ${badge(a.status)}</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-outline" onclick="App.editAnnouncement('${a.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-sm btn-outline" onclick="App.deleteRecord('osas_announcements','${a.id}','announcements','announcement')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:var(--text-secondary);white-space:pre-wrap">${esc(a.content)}</p>
+    </div>`).join('');
+}
+
+async function editAnnouncement(id){
+  const a = State.announcements.find(x=>x.id===id);
+  if (!a) return;
+  const title = window.prompt('Announcement title:', a.title);
+  if (title === null) return;
+  const content = window.prompt('Content:', a.content);
+  if (content === null) return;
+  try {
+    await updateDoc(doc(db,'osas_announcements',id),{
+      title: title.trim(), content: content.trim(), updatedAt: serverTimestamp()
+    });
+    await logAction('edit announcement','announcements',id);
+    toast('Announcement updated.','success');
+    await loadCollection('osas_announcements','announcements');
+    renderAnnouncements();
+  } catch(e){ alertBox('annAlert','error','Update failed: '+e.message); }
+}
+
+// ============================================================
+// ACTIVITIES
+// ============================================================
+async function createActivity(){
+  const title = $('atf_title').value.trim();
+  const err = $('actFormErr');
+  if (!title){ err.className='alert show error'; err.textContent='Title is required.'; return; }
+  err.className='alert';
+  try {
+    const r = await addDoc(collection(db,'osas_activities'),{
+      title, description:$('atf_desc').value.trim(),
+      category:$('atf_cat').value.trim(), organizer:$('atf_org').value.trim(),
+      venue:$('atf_venue').value.trim(),
+      startDate:$('atf_start').value || null, endDate:$('atf_end').value || null,
+      participants: parseInt($('atf_participants').value||'0',10)||0,
+      status:$('atf_status').value, remarks:$('atf_remarks').value.trim(),
+      createdAt: serverTimestamp(), createdBy: State.admin.uid
+    });
+    await logAction('create activity','activities',r.id);
+    toast('Activity saved.','success');
+    $('actFormHost').innerHTML='';
+    await loadCollection('osas_activities','activities');
+    renderActivities();
+  } catch(e){ console.error(e); err.className='alert show error'; err.textContent='Save failed: '+e.message; }
+}
+
+function renderActivities(){
+  const term = ($('actSearch').value||'').toLowerCase();
+  const rows = State.activities.filter(a=>{
+    if (!term) return true;
+    return ((a.title||'')+' '+(a.organizer||'')+' '+(a.venue||'')).toLowerCase().includes(term);
+  });
+  if (!rows.length){ $('actTableWrap').innerHTML = emptyHTML('No activities found.','fa-calendar-days'); return; }
+  $('actTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Title</th><th>Category</th><th>Organizer</th><th>Venue</th><th>Start</th><th>End</th><th>Participants</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${rows.map(a=>`<tr>
+      <td><strong>${esc(a.title)}</strong></td>
+      <td>${esc(a.category||'-')}</td>
+      <td>${esc(a.organizer||'-')}</td>
+      <td>${esc(a.venue||'-')}</td>
+      <td>${fmtDate(a.startDate)}</td>
+      <td>${fmtDate(a.endDate)}</td>
+      <td>${esc(a.participants||0)}</td>
+      <td>${badge(a.status)}</td>
+      <td><button class="btn btn-sm btn-outline" onclick="App.deleteRecord('osas_activities','${a.id}','activities','activity')"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ============================================================
+// ORGANIZATIONS
+// ============================================================
+async function createOrganization(){
+  const name = $('of_name').value.trim();
+  const err = $('orgFormErr');
+  if (!name){ err.className='alert show error'; err.textContent='Organization name is required.'; return; }
+  err.className='alert';
+  try {
+    const r = await addDoc(collection(db,'osas_organizations'),{
+      name, abbr:$('of_abbr').value.trim(), adviser:$('of_adviser').value.trim(),
+      president:$('of_president').value.trim(),
+      members: parseInt($('of_members').value||'0',10)||0,
+      accreditationStatus:$('of_status').value,
+      accreditationDate:$('of_accdate').value || null,
+      expirationDate:$('of_expdate').value || null,
+      remarks:$('of_remarks').value.trim(),
+      createdAt: serverTimestamp(), createdBy: State.admin.uid
+    });
+    await logAction('create organization','organizations',r.id);
+    toast('Organization saved.','success');
+    $('orgFormHost').innerHTML='';
+    await loadCollection('osas_organizations','organizations');
+    renderOrganizations();
+  } catch(e){ console.error(e); err.className='alert show error'; err.textContent='Save failed: '+e.message; }
+}
+
+function renderOrganizations(){
+  const term = ($('orgSearch').value||'').toLowerCase();
+  const rows = State.organizations.filter(o=>{
+    if (!term) return true;
+    return ((o.name||'')+' '+(o.adviser||'')).toLowerCase().includes(term);
+  });
+  if (!rows.length){ $('orgTableWrap').innerHTML = emptyHTML('No organizations found.','fa-users-rectangle'); return; }
+  $('orgTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Name</th><th>Abbr</th><th>Adviser</th><th>President</th><th>Members</th><th>Status</th><th>Accredited</th><th>Expires</th><th>Actions</th></tr></thead>
+    <tbody>${rows.map(o=>`<tr>
+      <td><strong>${esc(o.name)}</strong></td>
+      <td>${esc(o.abbr||'-')}</td>
+      <td>${esc(o.adviser||'-')}</td>
+      <td>${esc(o.president||'-')}</td>
+      <td>${esc(o.members||0)}</td>
+      <td>${badge(o.accreditationStatus)}</td>
+      <td>${fmtDate(o.accreditationDate)}</td>
+      <td>${fmtDate(o.expirationDate)}</td>
+      <td><button class="btn btn-sm btn-outline" onclick="App.deleteRecord('osas_organizations','${o.id}','organizations','organization')"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ============================================================
+// CONCERNS
+// ============================================================
+async function createConcern(){
+  const name = $('cf_name').value.trim();
+  const desc = $('cf_desc').value.trim();
+  const err = $('concernFormErr');
+  if (!name || !desc){ err.className='alert show error'; err.textContent='Student name and description are required.'; return; }
+  err.className='alert';
+  try {
+    const r = await addDoc(collection(db,'osas_concerns'),{
+      studentName:name, studentEmail:$('cf_email').value.trim(),
+      category:$('cf_cat').value.trim(), description:desc,
+      assignedTo:$('cf_personnel').value.trim(),
+      status:$('cf_status').value,
+      actionTaken:$('cf_action').value.trim(),
+      followupNotes:$('cf_notes').value.trim(),
+      dateReceived: new Date().toISOString().slice(0,10),
+      createdAt: serverTimestamp(), createdBy: State.admin.uid
+    });
+    await logAction('create concern','concerns',r.id);
+    toast('Concern saved.','success');
+    $('concernFormHost').innerHTML='';
+    await loadCollection('osas_concerns','concerns');
+    renderConcerns();
+  } catch(e){ console.error(e); err.className='alert show error'; err.textContent='Save failed: '+e.message; }
+}
+
+function renderConcerns(){
+  const term = ($('concernSearch').value||'').toLowerCase();
+  const status = $('concernStatusFilter').value;
+  const rows = State.concerns.filter(c=>{
+    if (status && c.status !== status) return false;
+    if (!term) return true;
+    return ((c.studentName||'')+' '+(c.category||'')).toLowerCase().includes(term);
+  });
+  if (!rows.length){ $('concernTableWrap').innerHTML = emptyHTML('No concerns found.','fa-headset'); return; }
+  $('concernTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Student</th><th>Category</th><th>Received</th><th>Assigned</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${rows.map(c=>`<tr>
+      <td><strong>${esc(c.studentName||'-')}</strong><div class="muted" style="font-size:11.5px">${esc((c.description||'').slice(0,80))}</div></td>
+      <td>${esc(c.category||'-')}</td>
+      <td>${fmtDate(c.dateReceived)}</td>
+      <td>${esc(c.assignedTo||'-')}</td>
+      <td>${badge(c.status)}</td>
+      <td>
+        <select style="padding:4px;border:1px solid var(--border);border-radius:6px;font-size:11.5px" onchange="App.updateConcernStatus('${c.id}',this.value)">
+          ${['Pending','In Progress','For Follow-up','Resolved','Closed'].map(s=>`<option ${c.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+        <button class="btn btn-sm btn-outline" onclick="App.deleteRecord('osas_concerns','${c.id}','concerns','concern')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+async function updateConcernStatus(id, status){
+  try {
+    await updateDoc(doc(db,'osas_concerns',id),{ status, updatedAt: serverTimestamp() });
+    await logAction('update concern status → '+status,'concerns',id);
+    toast('Concern status updated.','success');
+    await loadCollection('osas_concerns','concerns');
+    renderConcerns();
+  } catch(e){ console.error(e); alertBox('concernAlert','error','Update failed: '+e.message); }
+}
+
+// ============================================================
+// DELETE
+// ============================================================
+async function deleteRecord(col, id, stateKey, label){
+  const host = {
+    appointments: 'apptAlert',
+    documents: 'docAlert',
+    tasks: 'taskAlert',
+    announcements: 'annAlert',
+    activities: 'actAlert',
+    organizations: 'orgAlert',
+    concerns: 'concernAlert'
+  }[stateKey];
+  const alertEl = $(host);
+  if (!alertEl) return;
+  alertEl.className = 'alert show warning';
+  alertEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>
+    <span>Delete this ${label}? 
+      <button class="btn btn-sm btn-danger" style="margin-left:8px" id="confirmDel">Confirm Delete</button>
+      <button class="btn btn-sm btn-outline" style="margin-left:4px" id="cancelDel">Cancel</button>
+    </span>`;
+  $('cancelDel').onclick = ()=>{ alertEl.className='alert'; alertEl.textContent=''; };
+  $('confirmDel').onclick = async ()=>{
+    try {
+      await deleteDoc(doc(db,col,id));
+      await logAction('delete '+label, stateKey, id);
+      alertEl.className='alert show success';
+      alertEl.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${label} deleted.</span>`;
+      await loadCollection(col, stateKey);
+      ({appointments:renderAppointments, documents:renderDocuments, tasks:renderTasks,
+        announcements:renderAnnouncements, activities:renderActivities,
+        organizations:renderOrganizations, concerns:renderConcerns})[stateKey]();
+    } catch(e){
+      alertEl.className='alert show error';
+      alertEl.textContent = 'Delete failed: '+e.message;
+    }
+  };
+}
+
+// ============================================================
+// LOGS
+// ============================================================
+async function loadLogs(){
+  try {
+    const snap = await getDocs(query(collection(db,'osas_activity_logs'), orderBy('timestamp','desc'), limit(500)));
+    State.logs = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  } catch(e){
+    const snap = await getDocs(collection(db,'osas_activity_logs'));
+    State.logs = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    State.logs.sort((a,b)=>(toDate(b.timestamp)?.getTime()||0)-(toDate(a.timestamp)?.getTime()||0));
+  }
+  renderLogs();
+}
+
+function renderLogs(){
+  const term = ($('logSearch').value||'').toLowerCase();
+  const rows = State.logs.filter(l=>{
+    if (!term) return true;
+    return ((l.action||'')+' '+(l.module||'')+' '+(l.adminEmail||'')).toLowerCase().includes(term);
+  });
+  if (!rows.length){ $('logsTableWrap').innerHTML = emptyHTML('No activity logs yet.','fa-clipboard-list'); return; }
+  $('logsTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Timestamp</th><th>Admin</th><th>Action</th><th>Module</th><th>Record</th></tr></thead>
+    <tbody>${rows.slice(0,300).map(l=>`<tr>
+      <td class="muted">${fmtDateTime(l.timestamp)}</td>
+      <td>${esc(l.adminEmail||'-')}</td>
+      <td>${esc(l.action||'-')}</td>
+      <td>${esc(l.module||'-')}</td>
+      <td class="muted">${esc((l.recordId||'').slice(0,14))}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ============================================================
+// ADMINS
+// ============================================================
+async function loadAdmins(){
+  try {
+    const snap = await getDocs(collection(db,'admins'));
+    State.admins = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderAdmins();
+  } catch(e){ alertBox('adminsAlert','error','Load failed: '+e.message); }
+}
+
+function renderAdmins(){
+  if (!State.admins.length){ $('adminsTableWrap').innerHTML = emptyHTML('No administrators found.','fa-user-shield'); return; }
+  $('adminsTableWrap').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Email</th><th>UID</th><th>Role</th><th>Active</th><th>Created</th></tr></thead>
+    <tbody>${State.admins.map(a=>`<tr>
+      <td><strong>${esc(a.email||'-')}</strong></td>
+      <td class="muted" style="font-family:monospace;font-size:11.5px">${esc(a.id)}</td>
+      <td>${esc(a.role || 'admin')}</td>
+      <td>${a.active===true?badge('Active'):badge('Inactive')}</td>
+      <td class="muted">${fmtDate(a.createdAt)}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+async function createNewAccount(){
+  const email = $('newAdminEmail').value.trim();
+  const password = $('newAdminPass').value;
+  const role = $('newAdminRole').value;
+  const alertEl = $('createAccAlert');
+  const btn = $('createAccBtn');
+  
+  if (!email || !password) {
+    alertEl.className='alert show error';
+    alertEl.textContent = 'Email and password are required.';
+    return;
+  }
+  if (password.length < 6) {
+    alertEl.className='alert show error';
+    alertEl.textContent = 'Password must be at least 6 characters.';
+    return;
+  }
+
+  alertEl.className = 'alert';
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+
+  try {
+    // We use a secondary app instance so the admin currently logged in doesn't get logged out
+    const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+    const secondaryAuth = getAuth(secondaryApp);
+    
+    const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+    const newUid = cred.user.uid;
+    
+    // Save to admins collection
+    await setDoc(doc(db, 'admins', newUid), {
+      email: email,
+      active: true,
+      role: role,
+      createdAt: serverTimestamp()
+    });
+    
+    await secondaryAuth.signOut();
+    await deleteApp(secondaryApp);
+
+    alertEl.className='alert show success';
+    alertEl.textContent = `Account created successfully for ${email} as ${role}.`;
+    
+    $('newAdminEmail').value = '';
+    $('newAdminPass').value = '';
+    
+    await logAction('create account ' + role, 'admins', newUid);
+    await loadAdmins();
+  } catch (err) {
+    console.error(err);
+    alertEl.className='alert show error';
+    let m = 'Failed to create account.';
+    if (err.code === 'auth/email-already-in-use') m = 'Email is already registered in Firebase Auth.';
+    if (err.code === 'auth/invalid-email') m = 'Invalid email format.';
+    if (err.code === 'auth/weak-password') m = 'Password is too weak.';
+    alertEl.textContent = m;
+  }
+  
+  btn.disabled = false;
+  btn.innerHTML = orig;
+}
+
+async function upsertAdmin(){
+  const uid = $('adminUidInput').value.trim();
+  const email = $('adminEmailInput').value.trim();
+  const role = $('adminRoleInput').value;
+  const active = $('adminActiveInput').value === 'true';
+  
+  if (!uid || !email){ alertBox('adminsAlert','warning','UID and email are required.'); return; }
+  try {
+    const existing = await getDoc(doc(db,'admins',uid));
+    if (existing.exists()){
+      await updateDoc(doc(db,'admins',uid), { email, active, role });
+    } else {
+      await setDoc(doc(db,'admins',uid), { email, active, role, createdAt: serverTimestamp() });
+    }
+    await logAction('upsert administrator','admins',uid);
+    alertBox('adminsAlert','success','Administrator record saved.');
+    await loadAdmins();
+  } catch(e){ alertBox('adminsAlert','error','Save failed: '+e.message); }
+}
+
+// ============================================================
+// REPORTS
+// ============================================================
+let reportRows = [];
+let reportColumns = [];
+let reportTitle = '';
+
+function runReport(){
+  const module = $('reportModule').value;
+  const from = $('reportFrom').value ? new Date($('reportFrom').value).getTime() : 0;
+  const to = $('reportTo').value ? new Date($('reportTo').value).getTime()+86400000 : Infinity;
+  const inRange = (d)=>{
+    const t = toDate(d)?.getTime();
+    if (!t) return false;
+    return t>=from && t<=to;
+  };
+  let rows=[], cols=[];
+  reportTitle = '';
+  if (module==='students'){
+    reportTitle = 'Student Submissions';
+    const filtered = State.responses.filter(r=>inRange(r.submittedAt));
+    const labelSet = new Set();
+    filtered.forEach(r=> mapResponseFields(r).forEach(f=>labelSet.add(f.label)));
+    const labels = Array.from(labelSet);
+    cols = ['Form','Submitted',...labels];
+    rows = filtered.map(r=>{
+      const map={};
+      mapResponseFields(r).forEach(f=>map[f.label]=f.value);
+      return {Form:r.formName, Submitted: fmtDateTime(r.submittedAt), ...map};
+    });
+  } else if (module==='appointments'){
+    reportTitle='Appointments';
+    const f = State.appointments.filter(a=>inRange(a.createdAt));
+    cols = ['Student','Email','Purpose','Date','Time','Personnel','Status'];
+    rows = f.map(a=>({Student:a.studentName||'', Email:a.studentEmail||'', Purpose:a.purpose||'',
+      Date:a.apptDate||'', Time:a.apptTime||'', Personnel:a.personnel||'', Status:a.status||''}));
+  } else if (module==='documents'){
+    reportTitle='Documents';
+    const f = State.documents.filter(d=>inRange(d.createdAt));
+    cols = ['Ref No','Title','Type','Sender','Recipient','Received','Status'];
+    rows = f.map(d=>({['Ref No']:d.refNo||'', Title:d.title||'', Type:d.type||'',
+      Sender:d.sender||'', Recipient:d.recipient||'', Received:d.dateReceived||'', Status:d.status||''}));
+  } else if (module==='tasks'){
+    reportTitle='Tasks';
+    const f = State.tasks.filter(t=>inRange(t.createdAt));
+    cols=['Title','Assigned','Priority','Due','Status'];
+    rows = f.map(t=>({Title:t.title||'', Assigned:t.assignedTo||'', Priority:t.priority||'',
+      Due:t.dueDate||'', Status:t.status||''}));
+  } else if (module==='activities'){
+    reportTitle='Activities';
+    const f = State.activities.filter(a=>inRange(a.createdAt));
+    cols=['Title','Category','Organizer','Venue','Start','End','Participants','Status'];
+    rows = f.map(a=>({Title:a.title||'', Category:a.category||'', Organizer:a.organizer||'',
+      Venue:a.venue||'', Start:a.startDate||'', End:a.endDate||'',
+      Participants:a.participants||0, Status:a.status||''}));
+  } else if (module==='organizations'){
+    reportTitle='Organizations';
+    const f = State.organizations.filter(o=>inRange(o.createdAt));
+    cols=['Name','Abbr','Adviser','President','Members','Status','Expires'];
+    rows = f.map(o=>({Name:o.name||'', Abbr:o.abbr||'', Adviser:o.adviser||'',
+      President:o.president||'', Members:o.members||0, Status:o.accreditationStatus||'',
+      Expires:o.expirationDate||''}));
+  } else if (module==='concerns'){
+    reportTitle='Concerns';
+    const f = State.concerns.filter(c=>inRange(c.createdAt));
+    cols=['Student','Category','Received','Assigned','Status'];
+    rows = f.map(c=>({Student:c.studentName||'', Category:c.category||'',
+      Received:c.dateReceived||'', Assigned:c.assignedTo||'', Status:c.status||''}));
+  }
+  reportRows = rows; reportColumns = cols;
+  $('reportTitle').textContent = reportTitle;
+  $('reportMeta').textContent = `${rows.length} records`;
+  if (!rows.length){ $('reportBody').innerHTML = emptyHTML('No records in this range.','fa-chart-simple'); return; }
+  $('reportBody').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead>
+    <tbody>${rows.slice(0,300).map(r=>`<tr>${cols.map(c=>`<td>${esc(r[c]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    ${rows.length>300?'<p class="muted" style="margin-top:8px;font-size:12px">Showing first 300 rows. Export for full data.</p>':''}`;
+  logAction('generate report '+module,'reports');
+}
+
+function exportReportCSV(){
+  if (!reportRows.length){ alertBox('reportMeta','warning','Generate a report first.'); return; }
+  const lines = [reportColumns.map(csvCell).join(',')];
+  reportRows.forEach(r=> lines.push(reportColumns.map(c=>csvCell(r[c]||'')).join(',')));
+  downloadFile(reportTitle.replace(/\s+/g,'-').toLowerCase()+'.csv', lines.join('\n'),'text/csv');
+  toast('Report exported.','success');
+}
+
+function printReport(){
+  if (!reportRows.length) return;
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>${esc(reportTitle)}</title><style>
+    body{font-family:Arial;padding:24px} h1{font-size:18px} table{border-collapse:collapse;width:100%;font-size:11px}
+    th,td{border:1px solid #ccc;padding:5px;text-align:left} th{background:#f0f0f0}
+  </style></head><body>
+    <h1>${esc(reportTitle)} — Samar State University OSAS</h1>
+    <p style="font-size:11px;color:#666">Generated ${new Date().toLocaleString()}</p>
+    <table><thead><tr>${reportColumns.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead>
+    <tbody>${reportRows.map(r=>`<tr>${reportColumns.map(c=>`<td>${esc(r[c]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table>
+  </body></html>`);
+  w.document.close(); w.print();
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function renderSettings(){
+  $('settingsEmail').textContent = State.admin?.email || '-';
+  $('settingsUid').textContent = State.admin?.uid || '-';
+  $('settingsStatus').innerHTML = badge('Active');
+}
+
+// ============================================================
+// PUBLIC API (onclick handlers)
+// ============================================================
+window.App = {
+  refreshAll: async ()=>{
+    toast('Refreshing data...','info');
+    await Promise.all([
+      loadCollection('osas_appointments','appointments'),
+      loadCollection('osas_documents','documents'),
+      loadCollection('osas_tasks','tasks'),
+      loadCollection('osas_activities','activities'),
+      loadCollection('osas_organizations','organizations'),
+      loadCollection('osas_concerns','concerns'),
+      loadCollection('osas_announcements','announcements'),
+      loadCollection('osas_activity_logs','logs'),
+      loadCollection('admins','admins'),
+      loadFormsAndResponses()
+    ]);
+    navigate(State.currentView);
+    toast('Data refreshed.','success');
+  },
+  studentsPrev: ()=>{ if (State.studentsPage>1){ State.studentsPage--; renderStudentsTable(); } },
+  studentsNext: ()=>{ State.studentsPage++; renderStudentsTable(); },
+  viewStudent,
+  exportStudentsCSV, printStudents,
+  showForm, createAppointment, updateApptStatus, createDocument, updateDocStatus,
+  createTask, updateTaskStatus, createAnnouncement, editAnnouncement,
+  createActivity, createOrganization, createConcern, updateConcernStatus,
+  deleteRecord, loadLogs, loadAdmins, upsertAdmin, createNewAccount,
+  runReport, exportReportCSV, printReport
+};
+
+// Attach input listeners
+$('studentSearch').addEventListener('input', ()=>{ State.studentsPage=1; renderStudentsTable(); });
+$('studentFormFilter').addEventListener('change', ()=>{ State.studentsPage=1; renderStudentsTable(); });
+$('studentDateFilter').addEventListener('change', ()=>{ State.studentsPage=1; renderStudentsTable(); });
+$('studentPageSize').addEventListener('change', ()=>{ State.studentsPage=1; renderStudentsTable(); });
+$('apptSearch').addEventListener('input', renderAppointments);
+$('apptStatusFilter').addEventListener('change', renderAppointments);
+$('docSearch').addEventListener('input', renderDocuments);
+$('docStatusFilter').addEventListener('change', renderDocuments);
+$('taskSearch').addEventListener('input', renderTasks);
+$('taskStatusFilter').addEventListener('change', renderTasks);
+$('taskPriorityFilter').addEventListener('change', renderTasks);
+$('actSearch').addEventListener('input', renderActivities);
+$('orgSearch').addEventListener('input', renderOrganizations);
+$('concernSearch').addEventListener('input', renderConcerns);
+$('concernStatusFilter').addEventListener('change', renderConcerns);
+$('logSearch').addEventListener('input', renderLogs);
+
+// ============================================================
+// AUTH GUARD
+// ============================================================
+onAuthStateChanged(auth, async (user)=>{
+  if (!user){
+    window.location.href = 'login.html';
+    return;
+  }
+  try {
+    const snap = await getDoc(doc(db,'admins', user.uid));
+    if (!snap.exists() || snap.data().active !== true){
+      await signOut(auth);
+      window.location.href = 'login.html';
+      return;
+    }
+    const data = snap.data();
+    if (data.email && data.email.toLowerCase() !== (user.email||'').toLowerCase()){
+      await signOut(auth);
+      window.location.href = 'login.html';
+      return;
+    }
+    State.admin = { uid: user.uid, email: user.email };
+    $('userEmail').textContent = user.email;
+    $('userAvatar').textContent = (user.email||'A')[0].toUpperCase();
+    $('authGuard').style.display='none';
+
+    // Load all collections
+    await Promise.all([
+      loadCollection('osas_appointments','appointments'),
+      loadCollection('osas_documents','documents'),
+      loadCollection('osas_tasks','tasks'),
+      loadCollection('osas_activities','activities'),
+      loadCollection('osas_organizations','organizations'),
+      loadCollection('osas_concerns','concerns'),
+      loadCollection('osas_announcements','announcements'),
+      loadCollection('admins','admins'),
+      loadFormsAndResponses()
+    ]);
+    await loadLogs();
+    await logAction('login','system');
+    navigate('overview');
+  } catch(e){
+    console.error('Auth guard error:', e);
+    $('authGuard').innerHTML = '<div class="alert error show"><i class="fa-solid fa-circle-exclamation"></i><span>Unable to load dashboard: '+esc(e.message)+'</span></div>';
+  }
+});
+</script>
+</body>
+</html>
